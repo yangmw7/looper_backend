@@ -1,6 +1,7 @@
 package com.example.game_backend.controller;
 
 import com.example.game_backend.controller.dto.JoinRequest;
+import com.example.game_backend.controller.dto.LoginRequest;
 import com.example.game_backend.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,4 +33,11 @@ public class MemberController {
             return "fail";
         }
     }
+
+    @PostMapping("/api/login")
+    public String login(@RequestBody LoginRequest loginRequest) {
+        boolean result = memberService.login(loginRequest);
+        return result ? "login success" : "login fail";
+    }
+
 }
