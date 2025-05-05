@@ -1,11 +1,14 @@
 package com.example.game_backend.service;
 
 import com.example.game_backend.controller.dto.JoinRequest;
+import com.example.game_backend.controller.dto.LoginRequest;
 import com.example.game_backend.repository.MemberRepository;
 import com.example.game_backend.repository.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,4 +32,17 @@ public class MemberServiceImpl implements MemberService {
 
         return "success";
     }
+
+    @Override
+    public boolean login(LoginRequest loginRequest) {
+        Optional<Member> optionalMember = memberRepository.findByUsername(loginRequest.getUsername());
+
+        if (optionalMember.isEmpty()) return false;
+
+        Member member = optionalMember.get();
+        return passwordEncoder.matches(loginRequest.getPassword(), member.getPassword());
+    }
 }
+
+
+
