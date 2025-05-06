@@ -18,13 +18,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable() // CSRF 보안 비활성화 (개발 중에는 OK)
+                .csrf().disable() // CSRF 비활성화
                 .authorizeHttpRequests()
-                .requestMatchers("/join","/api/login", "/hello", "/h2-console/**").permitAll() // 여기는 인증 없이 접근 가능
-                .anyRequest().authenticated() // 나머지는 인증 필요
+                .requestMatchers(
+                        "/join", "/api/login", "/hello", "/h2-console/**",
+                        "/join-form", "/login-form", "/home", "/logout"
+                ).permitAll()
+                .anyRequest().authenticated()
                 .and()
-                .headers().frameOptions().disable(); // H2 콘솔 사용을 위한 설정
+                .logout(logout -> logout.disable()) // 🔥 Spring Security 기본 로그아웃 기능 꺼줌
+                .headers().frameOptions().disable(); // H2 콘솔용
 
         return http.build();
     }
 }
+
