@@ -18,5 +18,18 @@
 - ✅ 로그인 성공 시 "login success" 메시지 반환
 - ✅ Talend API Tester로 테스트 완료
 
+
+### 2025.05.06
+- ✅ Mustache 기반 회원가입/로그인/로그아웃 UI 화면 구현 (join.mustache, login.mustache, home.mustache)
+- ✅ ViewController 추가로 화면 연동 처리
+- ✅ HttpSession을 활용한 로그인 상태 유지
+- ✅ Spring Security 설정 수정 (.logout().disable() 포함)
+- ✅ 브라우저 테스트 완료 (회원가입 → 로그인 → 로그아웃)
+- ✅ H2 Console을 통해 DB 저장 여부 직접 확인
+
+
 ### 예정 작업
-- 🔜 캐릭터 정보 API 연동
+- 🔜 게시판 기능 구현 (글 작성, 목록, 상세 보기, 수정, 삭제)
+- 🔜 로그인 유저 세션을 활용한 게시글 작성자 연동
+- ⏸ 캐릭터 정보 API 연동 (게임 시스템과 연동 후 진행 예정)
+
