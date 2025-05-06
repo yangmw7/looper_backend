@@ -1,8 +1,12 @@
 package com.example.game_backend.controller.dto;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor // ← 이거 추가!
 public class LoginRequest {
     private String username;
     private String password;
