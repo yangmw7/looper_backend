@@ -28,8 +28,19 @@
 - ✅ H2 Console을 통해 DB 저장 여부 직접 확인
 
 
+### 2025.05.07
+- ✅ Mustache 기반 아이디 찾기 기능 구현 (find-id.mustache, find-id-result.mustache)
+- ✅ 이메일 입력 → DB 조회 → 아이디 반환 로직 구현
+- ✅ ViewController를 통한 화면 처리 및 결과 페이지 분리
+- ✅ 헤더/푸터 컴포넌트 분리 및 레이아웃 통일 (layout/header.mustache, layout/footer.mustache)
+- ✅ 각 페이지별 디자인 CSS 개선 (로그인, 회원가입, 아이디 찾기 등)
+
+
 ### 예정 작업
+- 🔜 비밀번호 찾기 및 재설정 기능 구현
 - 🔜 게시판 기능 구현 (글 작성, 목록, 상세 보기, 수정, 삭제)
 - 🔜 로그인 유저 세션을 활용한 게시글 작성자 연동
 - ⏸ 캐릭터 정보 API 연동 (게임 시스템과 연동 후 진행 예정)
+
+
 
