@@ -30,7 +30,7 @@ public class MemberViewController {
         JoinRequest joinRequest = new JoinRequest(username, password, email);
         memberService.join(joinRequest);
 
-        return "redirect:/login-form";
+        return "redirect:/join-success";
     }
 
     // 로그인 화면
@@ -73,4 +73,23 @@ public class MemberViewController {
         session.invalidate();
         return "redirect:/login-form";
     }
+
+    @GetMapping("/find-id")
+    public String findIdForm() {
+        return "find-id"; // templates/find-id.mustache
+    }
+
+    @PostMapping("/find-id")
+    public String findIdSubmit(@RequestParam String email, Model model) {
+        String username = memberService.findUsernameByEmail(email);
+        model.addAttribute("result", username != null ? username : "해당 이메일로 가입된 계정이 없습니다.");
+        return "find-id-result";
+    }
+
+    @GetMapping("/join-success")
+    public String joinSuccess() {
+        return "join-success"; // templates/join-success.mustache
+    }
+
+
 }

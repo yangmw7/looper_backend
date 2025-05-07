@@ -42,6 +42,13 @@ public class MemberServiceImpl implements MemberService {
         Member member = optionalMember.get();
         return passwordEncoder.matches(loginRequest.getPassword(), member.getPassword());
     }
+
+    @Override
+    public String findUsernameByEmail(String email) {
+        Optional<Member> member = memberRepository.findByEmail(email);
+        return member.map(Member::getUsername).orElse(null);
+    }
+
 }
 
 

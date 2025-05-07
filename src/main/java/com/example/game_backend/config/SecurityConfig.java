@@ -20,11 +20,12 @@ public class SecurityConfig {
         http
                 .csrf().disable() // CSRF 비활성화
                 .authorizeHttpRequests()
-                .requestMatchers(
+
+                /*.requestMatchers(
                         "/join", "/api/login", "/hello", "/h2-console/**",
-                        "/join-form", "/login-form", "/home", "/logout"
-                ).permitAll()
-                .anyRequest().authenticated()
+                        "/join-form", "/login-form", "/home", "/logout","/find-id", "/find-id-result"
+                ).permitAll() 테스트용 주석처리*/
+                .anyRequest().permitAll() // ✅ 모든 요청 허용
                 .and()
                 .logout(logout -> logout.disable()) // 🔥 Spring Security 기본 로그아웃 기능 꺼줌
                 .headers().frameOptions().disable(); // H2 콘솔용

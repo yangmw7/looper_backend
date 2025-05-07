@@ -7,5 +7,7 @@ public interface MemberService {
 
     String join(JoinRequest joinRequest);
     boolean login(LoginRequest loginRequest);
+    String findUsernameByEmail(String email);
+
 }
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>홈</title>
+    <title>회원가입 완료</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -12,46 +12,39 @@
             height: 100vh;
         }
 
-        .home-container {
+        .success-container {
             background: white;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
             text-align: center;
-            width: 320px;
+            width: 300px;
         }
 
-        h1 {
-            margin-bottom: 30px;
-            color: #333;
+        h2 {
+            margin-bottom: 20px;
+            color: #4CAF50;
         }
 
-        .logout-btn {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            background-color: #4CAF50;
+        a {
+            display: inline-block;
+            margin-top: 15px;
+            text-decoration: none;
             color: white;
+            background-color: #4CAF50;
+            padding: 10px 20px;
             border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
         }
 
-        .logout-btn:hover {
+        a:hover {
             background-color: #45a049;
-        }
-
-        form {
-            margin: 0;
         }
     </style>
 </head>
 <body>
-<div class="home-container">
-    <h1>환영합니다, {{username}}님!</h1>
-    <form action="/logout" method="get">
-        <button type="submit" class="logout-btn">로그아웃</button>
-    </form>
+<div class="success-container">
+    <h2>회원가입이 완료되었습니다 🎉</h2>
+    <a href="/login-form">로그인하러 가기</a>
 </div>
 </body>
 </html>
