@@ -29,18 +29,33 @@
 
 
 ### 2025.05.07
-- ✅ Mustache 기반 아이디 찾기 기능 구현 (find-id.mustache, find-id-result.mustache)
-- ✅ 이메일 입력 → DB 조회 → 아이디 반환 로직 구현
-- ✅ ViewController를 통한 화면 처리 및 결과 페이지 분리
-- ✅ 헤더/푸터 컴포넌트 분리 및 레이아웃 통일 (layout/header.mustache, layout/footer.mustache)
-- ✅ 각 페이지별 디자인 CSS 개선 (로그인, 회원가입, 아이디 찾기 등)
+✅ Mustache 기반 아이디 찾기 기능 구현
+→ find-id.mustache, find-id-result.mustache
+→ 이메일 입력 → DB 조회 → 아이디 반환 로직 구현
+→ ViewController 통한 화면 이동 및 결과 페이지 분리
+
+✅ Mustache 기반 비밀번호 찾기 및 재설정 기능 구현
+→ find-password.mustache, reset-password.mustache, reset-success.mustache
+→ 아이디 + 이메일 유효성 검사 후 세션에 저장
+→ 새 비밀번호 입력 후 확인값 일치 시 DB 업데이트
+
+✅ Header/Footer Mustache 분리 및 레이아웃 통일
+→ layout/header.mustache, layout/footer.mustache
+→ 각 화면에 공통 적용
+
+✅ 각 페이지별 UI 디자인 및 CSS 개선
+→ 로그인, 회원가입, 아이디/비밀번호 찾기 등 전체 스타일 통일
+
 
 
 ### 예정 작업
-- 🔜 비밀번호 찾기 및 재설정 기능 구현
+- 🛡 로그인 시 존재하지 않는 계정 예외 처리 및 메시지 출력
+- 🛡 회원가입 시 아이디 중복 확인 로직 및 에러 처리
 - 🔜 게시판 기능 구현 (글 작성, 목록, 상세 보기, 수정, 삭제)
 - 🔜 로그인 유저 세션을 활용한 게시글 작성자 연동
 - ⏸ 캐릭터 정보 API 연동 (게임 시스템과 연동 후 진행 예정)
+
+
 
 
 
