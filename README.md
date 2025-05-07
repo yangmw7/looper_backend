@@ -30,7 +30,7 @@
 
 ### 2025.05.07
 ✅ Mustache 기반 아이디 찾기 기능 구현
-→ find-id.mustache, find-id-result.mustache
+  → find-id.mustache, find-id-result.mustache
 → 이메일 입력 → DB 조회 → 아이디 반환 로직 구현
 → ViewController 통한 화면 이동 및 결과 페이지 분리
 
