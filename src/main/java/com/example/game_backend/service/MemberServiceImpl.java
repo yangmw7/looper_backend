@@ -19,6 +19,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public String join(JoinRequest joinRequest) {
+
+        boolean exists = memberRepository.findByUsername(joinRequest.getUsername()).isPresent();
+        if (exists) {
+            return "fail"; // 중복되면 가입 불가
+        }
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(joinRequest.getPassword());
 
@@ -41,6 +46,25 @@ public class MemberServiceImpl implements MemberService {
 
         Member member = optionalMember.get();
         return passwordEncoder.matches(loginRequest.getPassword(), member.getPassword());
+    }
+
+    @Override
+    public Optional<Member> findByEmail(String email){
+        return memberRepository.findByEmail(email);
+    }
+
+    @Override
+    public Optional<Member> findByUsernameAndEmail(String username, String email) {
+        return memberRepository.findByUsernameAndEmail(username, email);
+    }
+
+    @Override
+    public void updatePassword(String username, String newPassword){
+        Member member = member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        member.setPassword(encodedPassword);
+        memberRepository.save(member);
     }
 
     @Override
