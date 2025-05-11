@@ -61,22 +61,22 @@
 
 ---
 
-### 2025.05.11
-✅ **아이디 찾기 기능 구현 (REST API)**
-→ `POST /api/find-id` 엔드포인트 구현
-→ 이메일 입력 시 DB 조회 후 username 반환
-→ 실패 시 오류 메시지 반환
-→ `FindIdRequest DTO` 생성, `MemberService` 분리 적용
-→ `Talend API Tester`로 테스트 완료
+### 2025.05.11  
+✅ **아이디 찾기 기능 구현 (REST API)**  
+→ `POST /api/find-id` 엔드포인트 구현  
+→ 이메일 입력 시 DB 조회 후 username 반환  
+→ 실패 시 오류 메시지 반환  
+→ `FindIdRequest DTO` 생성, `MemberService` 분리 적용  
+→ `Talend API Tester`로 테스트 완료  
 
-✅ **비밀번호 재설정 기능 구현 (REST API)**
-→ 2단계 방식 구현
-  1) `POST /api/reset-password/request`: 아이디+이메일 유효성 검사
-  2) `POST /api/reset-password`: 새 비밀번호 입력 및 확인 → 암호화 후 DB 저장
-→ `ResetPasswordRequest`, `ResetPasswordChangeRequest DTO` 생성
-→ `newPassword`와 `confirmPassword` 일치 검사 포함
-→ `MemberService`에서 비즈니스 로직 처리
-→ `Talend API Tester`로 전체 흐름 검증 완료
+✅ **비밀번호 재설정 기능 구현 (REST API)**  
+→ 2단계 방식 구현  
+  1) `POST /api/reset-password/request`: 아이디+이메일 유효성 검사  
+  2) `POST /api/reset-password`: 새 비밀번호 입력 및 확인 → 암호화 후 DB 저장  
+→ `ResetPasswordRequest`, `ResetPasswordChangeRequest DTO` 생성  
+→ `newPassword`와 `confirmPassword` 일치 검사 포함  
+→ `MemberService`에서 비즈니스 로직 처리  
+→ `Talend API Tester`로 전체 흐름 검증 완료  
 
 
 ## 🛠 예정 작업
