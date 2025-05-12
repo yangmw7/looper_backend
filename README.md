@@ -79,6 +79,19 @@
 → `Talend API Tester`로 전체 흐름 검증 완료  
 
 
+### 2025.05.12
+✅** 세션 기반 로그인 기능 구현 (HttpSession 방식)**  
+→ `POST /api/login` 엔드포인트 구현  
+→ 로그인 성공 시 `HttpSession`에 사용자 정보(Member) 저장  
+→ 이후 요청에서 `HttpServletRequest.getSession()`을 통해 사용자 인증  
+→ 게시글 작성 시 세션의 사용자 닉네임을 `writer`로 자동 설정  
+→ 로그인 실패 시 401 상태 코드 반환  
+→ `MemberService` 내에서 인증 로직 분리 처리  
+→ `Postman`로 로그인 흐름 정상 작동 확인  
+
+**이 구현은 추후 React 프론트와의 통신을 위해 JWT 방식으로 리팩토링 예정이며,
+해당 브랜치(auth/session-login)는 세션 기반 인증 흐름 보관용으로 유지됩니다.**
+
 ## 🛠 예정 작업
 
 - 🛡 **로그인 시 존재하지 않는 계정 예외 처리 및 메시지 출력**
