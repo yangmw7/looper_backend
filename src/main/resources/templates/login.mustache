@@ -1,15 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
+{{> layout/header}}
+
     <title>로그인</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wrapper {
+            flex: 1;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
+            align-items: start;
+            padding-top: 60px;
+            padding-bottom: 60px;
         }
 
         .login-container {
@@ -70,29 +79,30 @@
             background-color: #45a049;
         }
     </style>
-</head>
-<body>
-<div class="login-container">
-    <h1>로그인</h1>
 
-    <form action="/login-form" method="post">
-        <input type="text" name="username" placeholder="아이디" required>
-        <input type="password" name="password" placeholder="비밀번호" required>
-        <button type="submit" class="full-btn">로그인</button>
-    </form>
+<div class="wrapper">
+    <div class="login-container">
+        <h1>로그인</h1>
 
-    <form action="/join-form" method="get">
-        <button type="submit" class="full-btn">회원가입</button>
-    </form>
-
-    <div class="half-btn-group">
-        <form action="/find-id" method="get">
-            <button type="submit">아이디 찾기</button>
+        <form action="/login-form" method="post">
+            <input type="text" name="username" placeholder="아이디" required>
+            <input type="password" name="password" placeholder="비밀번호" required>
+            <button type="submit" class="full-btn">로그인</button>
         </form>
-        <form action="/find-password" method="get">
-            <button type="submit">비밀번호 찾기</button>
+
+        <form action="/join-form" method="get">
+            <button type="submit" class="full-btn">회원가입</button>
         </form>
+
+        <div class="half-btn-group">
+            <form action="/find-id" method="get">
+                <button type="submit">아이디 찾기</button>
+            </form>
+            <form action="/find-password" method="get">
+                <button type="submit">비밀번호 찾기</button>
+            </form>
+        </div>
     </div>
 </div>
-</body>
-</html>
+
+{{> layout/footer}}

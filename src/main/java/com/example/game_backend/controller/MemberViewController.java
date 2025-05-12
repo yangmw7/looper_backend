@@ -25,9 +25,11 @@ public class MemberViewController {
     @PostMapping("/join-form")
     public String joinSubmit(@RequestParam String username,
                              @RequestParam String password,
-                             @RequestParam String email) {
+                             @RequestParam String email,
+                             @RequestParam String nickname
+    ) {
 
-        JoinRequest joinRequest = new JoinRequest(username, password, email);
+        JoinRequest joinRequest = new JoinRequest(username, password, email, nickname);
         memberService.join(joinRequest);
 
         return "redirect:/join-success";

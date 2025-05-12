@@ -14,7 +14,7 @@ public interface MemberService {
     Optional<Member> findByEmail(String email);
 
     String findUsernameByEmail(String email);
-    Optional<Member> findByUsernameAndEmail(String username, String email);
+    Optional<Member> findByUsernameAndEmail(String userid, String email);
     void updatePassword(String username, String newPassword);
 }
 

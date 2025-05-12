@@ -29,6 +29,7 @@ public class MemberServiceImpl implements MemberService {
 
         Member member = Member.builder()
                 .username(joinRequest.getUsername())
+                .nickname(joinRequest.getNickname())
                 .password(encodedPassword) // 암호화된 비밀번호 저장
                 .email(joinRequest.getEmail())
                 .build();
