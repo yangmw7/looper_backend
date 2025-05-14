@@ -80,15 +80,28 @@
 
 ---
 
-### 2025.05.12
-✅** 세션 기반 로그인 기능 구현 (HttpSession 방식)**  
-→ `POST /api/login` 엔드포인트 구현  
-→ 로그인 성공 시 `HttpSession`에 사용자 정보(Member) 저장  
-→ 이후 요청에서 `HttpServletRequest.getSession()`을 통해 사용자 인증  
-→ 게시글 작성 시 세션의 사용자 닉네임을 `writer`로 자동 설정  
-→ 로그인 실패 시 401 상태 코드 반환  
-→ `MemberService` 내에서 인증 로직 분리 처리  
-→ `Postman`로 로그인 흐름 정상 작동 확인  
+### 2025.05.12  
+~~✅ **세션 기반 로그인 기능 구현 (HttpSession 방식)**~~  
+~~→ `POST /api/login` 엔드포인트 구현~~  
+~~→ 로그인 성공 시 `HttpSession`에 사용자 정보(Member) 저장~~  
+~~→ 이후 요청에서 `HttpServletRequest.getSession()`을 통해 사용자 인증~~  
+~~→ 게시글 작성 시 세션의 사용자 닉네임을 `writer`로 자동 설정~~  
+~~→ 로그인 실패 시 401 상태 코드 반환~~  
+~~→ `MemberService` 내에서 인증 로직 분리 처리~~  
+~~→ `Postman`로 로그인 흐름 정상 작동 확인~~
+
+---
+
+### 2025.05.14  
+✅ **JWT 기반 로그인 및 게시판 인증 처리 구현**  
+→ `POST /api/login` 시 JWT 토큰 발급 (`JwtUtil` 사용)  
+→ 토큰을 `Authorization: Bearer <토큰>` 헤더로 전달하여 인증  
+→ `JwtUtil.extractUsername()`을 통해 사용자 식별  
+→ 게시글 작성 시 사용자 닉네임 자동 삽입  
+→ 게시글 수정 시 작성자와 토큰 주인 일치 여부 확인  
+→ `PostController`, `PostService` 기반 게시판 CRUD 완성  
+→ `Postman`로 전체 흐름 테스트 완료
+
 
 ---
 
