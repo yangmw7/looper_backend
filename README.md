@@ -108,6 +108,17 @@
 
 ---
 
+### 2025.05.19
+✅ **MySQL 연동 및 데이터 저장 테스트 완료**  
+→ H2 대신 `MySQL 8.0` 로컬 서버 연동 (`looper_db` 사용)  
+→ `application.properties`에 `MySQL` 접속 정보 설정  
+→ `member`, `post` 테이블 자동 생성 (`JPA Entity` 기반)  
+→ `Postman`으로 회원가입/로그인/게시글 작성 요청 시 데이터 정상 저장 확인  
+→ `MySQL Workbench`를 통해 DB 직접 조회 및 구조 확인 완료  
+→ 전체 백엔드 흐름이 `MySQL` 기준으로 완전히 전환됨  
+
+
+---
 
 
 ## 🛠 예정 작업
