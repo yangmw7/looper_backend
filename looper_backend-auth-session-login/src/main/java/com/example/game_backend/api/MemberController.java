@@ -40,14 +40,15 @@ public class MemberController {
     }
 
     @PostMapping("/api/join")
-    public String join(@RequestBody JoinRequest joinRequest){
-
+    public String join(@RequestBody JoinRequest joinRequest) {
         String result = memberService.join(joinRequest);
 
-        if("success".equalsIgnoreCase(result)){
+        if ("success".equalsIgnoreCase(result)) {
             return "회원가입 성공";
-        }
-        else{
+        } else if ("fail_email".equalsIgnoreCase(result)) {
+            return "이미 있는 이메일입니다.";
+        } else {
+            // "fail_username"인 경우
             return "이미 있는 아이디입니다.";
         }
     }
