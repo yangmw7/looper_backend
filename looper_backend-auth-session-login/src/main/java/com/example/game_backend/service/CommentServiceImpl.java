@@ -1,6 +1,7 @@
 package com.example.game_backend.service;
 
 import com.example.game_backend.controller.dto.CommentRequest;
+import com.example.game_backend.controller.dto.CommentResponse;
 import com.example.game_backend.repository.CommentRepository;
 import com.example.game_backend.repository.MemberRepository;
 import com.example.game_backend.repository.PostRepository;
@@ -10,6 +11,11 @@ import com.example.game_backend.repository.entity.Post;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +46,30 @@ public class CommentServiceImpl implements CommentService {
 
         // 4. 저장
         return commentRepository.save(comment);
+    }
+
+    // (2) 특정 게시물의 댓글 전체 조회
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getCommentsByPostId(Long postId) {
+        // 1) Post 엔티티 조회
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글 없음"));
+
+        // 2) CommentRepository를 통해 해당 게시물의 댓글 리스트를 최신순(desc)으로 가져옴
+        List<Comment> commentEntities = commentRepository.findAllByPostOrderByCreatedAtDesc(post);
+
+        // 3) CommentResponse DTO로 매핑
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return commentEntities.stream()
+                .map(c -> CommentResponse.builder()
+                        .id(c.getId())
+                        .content(c.getContent())
+                        .writerNickname(c.getNickname())
+                        .createdAt(c.getCreatedAt().format(formatter))
+                        .build()
+                )
+                .collect(Collectors.toList());
     }
 
 }
