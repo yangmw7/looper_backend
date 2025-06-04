@@ -15,34 +15,46 @@ import java.util.Optional;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder; // ← 주입 추가
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public String join(JoinRequest joinRequest) {
-
-        boolean exists = memberRepository.findByUsername(joinRequest.getUsername()).isPresent();
-        if (exists) {
-            return "fail"; // 중복되면 가입 불가
+        // --------------------------------------
+        // 1) 이메일 중복 체크 (추가된 부분)
+        // --------------------------------------
+        boolean emailExists = memberRepository.findByEmail(joinRequest.getEmail()).isPresent();
+        if (emailExists) {
+            // 이미 같은 이메일이 존재하는 경우
+            return "fail_email";
         }
-        // 비밀번호 암호화
+
+        // --------------------------------------
+        // 2) 기존 로직: 아이디(Username) 중복 체크
+        // --------------------------------------
+        boolean usernameExists = memberRepository.findByUsername(joinRequest.getUsername()).isPresent();
+        if (usernameExists) {
+            return "fail_username";
+        }
+
+        // --------------------------------------
+        // 3) 둘 다 중복이 아니면 회원가입 처리
+        // --------------------------------------
         String encodedPassword = passwordEncoder.encode(joinRequest.getPassword());
 
         Member member = Member.builder()
                 .username(joinRequest.getUsername())
                 .nickname(joinRequest.getNickname())
-                .password(encodedPassword) // 암호화된 비밀번호 저장
+                .password(encodedPassword)
                 .email(joinRequest.getEmail())
                 .build();
 
         memberRepository.save(member);
-
         return "success";
     }
 
     @Override
     public boolean login(LoginRequest loginRequest) {
         Optional<Member> optionalMember = memberRepository.findByUsername(loginRequest.getUsername());
-
         if (optionalMember.isEmpty()) return false;
 
         Member member = optionalMember.get();
@@ -50,7 +62,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Optional<Member> findByEmail(String email){
+    public Optional<Member> findByEmail(String email) {
         return memberRepository.findByEmail(email);
     }
 
@@ -60,8 +72,8 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void updatePassword(String username, String newPassword){
-        Member member = member = memberRepository.findByUsername(username)
+    public void updatePassword(String username, String newPassword) {
+        Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         String encodedPassword = passwordEncoder.encode(newPassword);
         member.setPassword(encodedPassword);
@@ -73,8 +85,4 @@ public class MemberServiceImpl implements MemberService {
         Optional<Member> member = memberRepository.findByEmail(email);
         return member.map(Member::getUsername).orElse(null);
     }
-
 }
-
-
-
