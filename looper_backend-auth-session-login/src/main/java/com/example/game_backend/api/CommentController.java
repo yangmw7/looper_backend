@@ -1,6 +1,7 @@
 package com.example.game_backend.api;
 
 import com.example.game_backend.controller.dto.CommentRequest;
+import com.example.game_backend.controller.dto.CommentResponse;
 import com.example.game_backend.repository.entity.Comment;
 import com.example.game_backend.service.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,5 +40,13 @@ public class CommentController {
         log.info("✅ 저장된 댓글 ID: {}", savedComment.getId());
 
         return ResponseEntity.ok(savedComment);
+    }
+
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Long postId) {
+        log.info("🔍 댓글 목록 조회 요청: postId={}", postId);
+
+        List<CommentResponse> dtos = commentService.getCommentsByPostId(postId);
+        return ResponseEntity.ok(dtos);
     }
 }
