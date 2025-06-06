@@ -121,8 +121,8 @@
 ---
 
 
-**2025.05.22**  
-✅ 댓글 작성 기능 구현 (닉네임 저장 포함)  
+### 2025.05.22  
+**✅ 댓글 작성 기능 구현 (닉네임 저장 포함)**
 → 게시글 상세보기에서 댓글 작성 `API` 구현 완료  
 → 댓글 작성 시, `JWT` 인증을 통해 로그인 사용자 정보 추출  
 → `Comment` 엔티티에 `Member`와 `Post` 연관 매핑   
@@ -135,8 +135,8 @@
 ---
 
 
-**2025.06.05**  
-✅ 댓글 수정 및 삭제 기능 추가  
+### 2025.06.05  
+**✅ 댓글 수정 및 삭제 기능 추가**
 → `CommentController`에 `PUT /api/posts/{postId}/comments/{commentId}` 엔드포인트 구현  
 → `CommentController`에 `DELETE /api/posts/{postId}/comments/{commentId}` 엔드포인트 구현  
 → 댓글 작성자만 수정/삭제할 수 있도록 서비스 로직에서 작성자 검증 추가  
@@ -147,19 +147,19 @@
 
 
 **2025.06.06**  
-✅ 글 작성 시 사진 여러 장 첨부 기능 추가  
+**✅ 글 작성 시 사진 여러 장 첨부 기능 추가** 
 → `PostRequest DTO`에 `private MultipartFile[] imageFiles;` 선언하여 파일 배열로 수신  
 → `PostController#createPost`에서 `@ModelAttribute PostRequest`를 통해 `imageFiles` 배열 바인딩  
 → `PostService.save()` 메서드에서 받은 `MultipartFile[]`를 반복 처리하여 다중 이미지 저장  
 → 클라이언트`(CommunityCreatePage.jsx)`에서 `<input type="file" multiple />` 사용, FormData에 `imageFiles` 키를 여러 번 `append`  
 
-✅ 커뮤니티 게시판 10개씩 페이징 처리 추가  
+**✅ 커뮤니티 게시판 10개씩 페이징 처리 추가**
 → `CommunityListPage.jsx`에서 `currentPage`와 `postsPerPage = 10` 상태 관리  
 → 전체 게시글 목록을 가져온 뒤 `posts.slice(indexOfFirstPost, indexOfLastPost)`로 10개씩 자르기  
 → `totalPages = Math.ceil(posts.length / postsPerPage)` 계산하여 페이지네이션 버튼 렌더링  
 → “이전/다음” 및 개별 페이지 번호 버튼으로 페이지 전환 기능 구현  
 
-✅ 메인페이지 텍스트 이벤트 기능 추가  
+**✅ 메인페이지 텍스트 이벤트 기능 추가**  
 → `MainPage.jsx`에 세 줄 문구를 배열`(String[] lines)`로 관리  
 → 각 줄을 `<p className="typing-line">`로 감싸고 CSS `.fade-in` 애니메이션 적용  
 → 타이핑 애니메이션 없이, 문장 전체가 바로 아래→위 슬라이드업 및 페이드인  
