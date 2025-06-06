@@ -23,9 +23,10 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final MemberRepository memberRepository;
-    private final PostRepository postRepository; // ✅ 추가
+    private final PostRepository postRepository;
 
     @Override
+    @Transactional
     public Comment saveComment(Long postId, CommentRequest commentRequest) {
         // 1. JWT로 로그인 사용자 가져오기
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -39,7 +40,7 @@ public class CommentServiceImpl implements CommentService {
         // 3. 댓글 생성
         Comment comment = Comment.builder()
                 .member(member)
-                .nickname(member.getNickname()) // ✅ 닉네임도 따로 저장
+                .nickname(member.getNickname())
                 .post(post)
                 .content(commentRequest.getContent())
                 .build();
@@ -48,7 +49,6 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.save(comment);
     }
 
-    // (2) 특정 게시물의 댓글 전체 조회
     @Override
     @Transactional(readOnly = true)
     public List<CommentResponse> getCommentsByPostId(Long postId) {
@@ -72,4 +72,46 @@ public class CommentServiceImpl implements CommentService {
                 .collect(Collectors.toList());
     }
 
+    // ── 여기부터 수정·삭제 메서드 추가 ──
+
+    @Override
+    @Transactional
+    public Comment updateComment(Long commentId, CommentRequest commentRequest) {
+        // 1. 로그인한 사용자 username
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // 2. 수정할 댓글 조회
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다. id=" + commentId));
+
+        // 3. 작성자 검사 (로그인한 사람과 댓글 작성자가 같아야 수정 가능)
+        String writerUsername = comment.getMember().getUsername();
+        if (!writerUsername.equals(username)) {
+            throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
+        }
+
+        // 4. 내용 변경
+        comment.setContent(commentRequest.getContent());
+        return commentRepository.save(comment);
+    }
+
+    @Override
+    @Transactional
+    public void deleteComment(Long commentId) {
+        // 1. 로그인한 사용자 username
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // 2. 삭제할 댓글 조회
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다. id=" + commentId));
+
+        // 3. 작성자 검사
+        String writerUsername = comment.getMember().getUsername();
+        if (!writerUsername.equals(username)) {
+            throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
+        }
+
+        // 4. 삭제
+        commentRepository.delete(comment);
+    }
 }
