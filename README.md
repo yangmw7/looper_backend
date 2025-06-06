@@ -146,7 +146,7 @@
 ---
 
 
-**2025.06.06**  
+### 2025.06.06 
 **✅ 글 작성 시 사진 여러 장 첨부 기능 추가** 
 → `PostRequest DTO`에 `private MultipartFile[] imageFiles;` 선언하여 파일 배열로 수신  
 → `PostController#createPost`에서 `@ModelAttribute PostRequest`를 통해 `imageFiles` 배열 바인딩  
