@@ -120,6 +120,7 @@
 
 ---
 
+
 **2025.05.22**  
 ✅ 댓글 작성 기능 구현 (닉네임 저장 포함)  
 → 게시글 상세보기에서 댓글 작성 `API` 구현 완료  
@@ -134,15 +135,38 @@
 ---
 
 
+**2025.06.05**  
+✅ 댓글 수정 및 삭제 기능 추가  
+→ `CommentController`에 `PUT /api/posts/{postId}/comments/{commentId}` 엔드포인트 구현  
+→ `CommentController`에 `DELETE /api/posts/{postId}/comments/{commentId}` 엔드포인트 구현  
+→ 댓글 작성자만 수정/삭제할 수 있도록 서비스 로직에서 작성자 검증 추가  
+→ `CommunityDetailPage.jsx`에서 댓글 수정/삭제 버튼 표시 및 API 호출 기능 완성  
+
+
+---
+
+
+**2025.06.06**  
+✅ 글 작성 시 사진 여러 장 첨부 기능 추가  
+→ `PostRequest DTO`에 `private MultipartFile[] imageFiles;` 선언하여 파일 배열로 수신  
+→ `PostController#createPost`에서 `@ModelAttribute PostRequest`를 통해 `imageFiles` 배열 바인딩  
+→ `PostService.save()` 메서드에서 받은 `MultipartFile[]`를 반복 처리하여 다중 이미지 저장  
+→ 클라이언트`(CommunityCreatePage.jsx)`에서 `<input type="file" multiple />` 사용, FormData에 `imageFiles` 키를 여러 번 `append`  
+
+✅ 커뮤니티 게시판 10개씩 페이징 처리 추가  
+→ `CommunityListPage.jsx`에서 `currentPage`와 `postsPerPage = 10` 상태 관리  
+→ 전체 게시글 목록을 가져온 뒤 `posts.slice(indexOfFirstPost, indexOfLastPost)`로 10개씩 자르기  
+→ `totalPages = Math.ceil(posts.length / postsPerPage)` 계산하여 페이지네이션 버튼 렌더링  
+→ “이전/다음” 및 개별 페이지 번호 버튼으로 페이지 전환 기능 구현  
+
+✅ 메인페이지 텍스트 이벤트 기능 추가  
+→ `MainPage.jsx`에 세 줄 문구를 배열`(String[] lines)`로 관리  
+→ 각 줄을 `<p className="typing-line">`로 감싸고 CSS `.fade-in` 애니메이션 적용  
+→ 타이핑 애니메이션 없이, 문장 전체가 바로 아래→위 슬라이드업 및 페이드인  
+→ 마지막 줄 문구가 나타난 이후에 “무료 다운로드” 버튼과 서브텍스트가 .fade-in으로 순차 등장  
+→ CSS`(MainPage.css)`에 `.typing-line`과 `.fade-in`키프레임 정의 완료  
+
 **🛠 예정 작업**  
-⏸ 캐릭터 정보 API 연동 (게임 시스템과 연동 후 진행 예정)  
-🧩 프론트엔드 구현 (`React`)  
- → 로그인 / 회원가입 UI 페이지 구성  
- → 게시글 목록 및 상세 조회 페이지 구현  
- → 게시글 작성 / 수정 / 삭제 기능 연동  
- → 댓글 목록 / 작성 UI 추가 및 연동  
- → JWT 토큰 저장 및 인증 상태 관리 (`localStorage` or `Redux`)  
- → 로그인 여부에 따른 UI 분기 처리 (작성/수정/삭제 권한 표시)  
  → 추후 게임 캐릭터 정보 조회 및 전략 공유 기능 UI 계획  
  → 디자인 및 사용자 경험(UI/UX) 개선  
 
