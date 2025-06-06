@@ -9,4 +9,8 @@ import java.util.List;
 public interface CommentService {
     Comment saveComment(Long postId, CommentRequest commentRequest);
     List<CommentResponse> getCommentsByPostId(Long postId);
+
+    // ↓ 여기부터 추가
+    Comment updateComment(Long commentId, CommentRequest commentRequest);
+    void deleteComment(Long commentId);
 }
