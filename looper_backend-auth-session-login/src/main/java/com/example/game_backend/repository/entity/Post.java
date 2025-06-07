@@ -38,10 +38,22 @@ public class Post {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    // ★ Builder 사용 시 초기값 보존을 위해 @Builder.Default를 반드시 추가해야 합니다.
+    /** 이미지 엔티티 연관관계 (Cascade ALL + orphanRemoval) */
     @Builder.Default
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "post",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<Image> images = new ArrayList<>();
 
-    // (기존의 imageUrl 필드를 지우고, Image 엔티티 리스트로 대체했을 때 이런 형태가 됩니다.)
+    /** 댓글 엔티티 연관관계 추가 **/
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "post",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Comment> comments = new ArrayList<>();
+
 }
