@@ -7,7 +7,9 @@ import com.example.game_backend.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -89,9 +91,20 @@ public class CommentController {
             @PathVariable Long commentId) {
 
         log.info("🗑️ 댓글 삭제 요청: postId={}, commentId={}", postId, commentId);
-        commentService.deleteComment(commentId);
-        log.info("✅ 삭제된 댓글 ID: {}", commentId);
+        try {
+            commentService.deleteComment(commentId);
+            log.info("✅ 삭제된 댓글 ID: {}", commentId);
+            return ResponseEntity.noContent().build();
 
-        return ResponseEntity.noContent().build();
+        } catch (AccessDeniedException ex) {
+            log.warn("⚠️ 삭제 권한 없음: commentId={}, user={}",
+                    commentId,
+                    SecurityContextHolder.getContext().getAuthentication().getName());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        } catch (IllegalArgumentException ex) {
+            log.error("❌ 삭제 실패: {}", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }
