@@ -166,6 +166,39 @@
 → 마지막 줄 문구가 나타난 이후에 “무료 다운로드” 버튼과 서브텍스트가 .fade-in으로 순차 등장  
 → CSS`(MainPage.css)`에 `.typing-line`과 `.fade-in`키프레임 정의 완료  
 
+---
+
+
+### 2025.06.07
+
+✅ **관리자(Admin) 페이지 및 권한 기능 추가**  
+→ `/admin/users` 엔드포인트 · `AdminController` 구현 → 전체 유저 목록 조회, 검색, 삭제  
+→ `AdminUserListPage.jsx` / `AdminUserListPage.css` 작성  
+→ 관리자 전용 네비게이션 메뉴 추가 (로그인 시 role=ADMIN에게만 표시)  
+→ React 라우팅 보호: `/admin/**` 경로 접근 시 토큰의 `roles` 클레임 검사  
+
+✅ **커뮤니티 글 수정 페이지 구현 & 이미지 처리 오류 수정**  
+→ `CommunityEditPage.jsx` / `CommunityEditPage.css` 작성  
+→ 기존 이미지 유지·삭제 · 새 이미지 추가 FormData 바인딩 (`keepImageUrls` + `imageFiles`)  
+→ **오류 수정**:  
+   - `input[type="file"]` key 재생성(`useRef` + `key={…}`)으로 두 번째 선택 시 onChange 미발생 문제 해결  
+   - 백엔드 `@RequestParam(value="keepImageUrls", required=false)` 기본 빈 리스트 처리 추가  
+
+---
+
+
+### 2025.06.08
+
+✅ **ADMIN 권한으로 다른 사용자 댓글·게시글 삭제 오류 수정**  
+→ **원인**: JWT 인증 필터에서 권한(claims)이 `SecurityContext`에 설정되지 않아, 서비스 레이어의 `isAdmin` 검사 실패  
+→ **해결**:  
+1. `JwtAuthenticationFilter.doFilterInternal(...)` 에서  
+   ```java
+   List<GrantedAuthority> auths = List.of(new SimpleGrantedAuthority("ROLE_"+ extractedRole));
+   UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, null, auths);
+   SecurityContextHolder.getContext().setAuthentication(token); ```
+
+
 **🛠 예정 작업**  
  → 추후 게임 캐릭터 정보 조회 및 전략 공유 기능 UI 계획  
  → 디자인 및 사용자 경험(UI/UX) 개선  
