@@ -1,6 +1,7 @@
+// src/main/java/com/example/game_backend/config/JwtUtil.java
 package com.example.game_backend.config;
-
 import com.example.game_backend.repository.entity.Member;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -19,7 +20,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(member.getUsername())
                 .claim("nickname", member.getNickname())
-                .claim("roles", List.of(member.getRole().name()))  // ← 여기에 roles 추가
+                .claim("roles", List.of(member.getRole().name()))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 3600000))
                 .signWith(SECRET_KEY)
@@ -27,11 +28,14 @@ public class JwtUtil {
     }
 
     public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
+    }
+
+    public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(SECRET_KEY)
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
     }
 }
