@@ -1,3 +1,4 @@
+// src/main/java/com/example/game_backend/repository/entity/Post.java
 package com.example.game_backend.repository.entity;
 
 import jakarta.persistence.*;
@@ -38,7 +39,7 @@ public class Post {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    /** 이미지 엔티티 연관관계 (Cascade ALL + orphanRemoval) */
+    /** 이미지 매핑 유지 */
     @Builder.Default
     @OneToMany(
             mappedBy = "post",
@@ -47,7 +48,7 @@ public class Post {
     )
     private List<Image> images = new ArrayList<>();
 
-    /** 댓글 엔티티 연관관계 추가 **/
+    /** 댓글 매핑 추가: Post 삭제 시 댓글도 함께 삭제됩니다 */
     @Builder.Default
     @OneToMany(
             mappedBy = "post",
@@ -55,5 +56,4 @@ public class Post {
             orphanRemoval = true
     )
     private List<Comment> comments = new ArrayList<>();
-
 }
