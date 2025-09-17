@@ -1,7 +1,7 @@
 package com.example.game_backend.controller;
 
-import com.example.game_backend.controller.dto.FindPasswordRequest;
 import com.example.game_backend.controller.dto.ResetPasswordRequest;
+import com.example.game_backend.controller.dto.ResetPasswordChangeRequest;
 import com.example.game_backend.service.PasswordService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class PasswordController {
     }
 
     @PostMapping("/find-password")
-    public String findPassword(@ModelAttribute FindPasswordRequest request, Model model, HttpSession session) {
+    public String findPassword(@ModelAttribute ResetPasswordRequest request, Model model, HttpSession session) {
         boolean exists = passwordService.verifyUser(request);
         if (exists) {
             session.setAttribute("resetUsername", request.getUsername());
@@ -41,7 +41,7 @@ public class PasswordController {
     }
 
     @PostMapping("/reset-password")
-    public String resetPassword(@ModelAttribute ResetPasswordRequest request, Model model, HttpSession session) {
+    public String resetPassword(@ModelAttribute ResetPasswordChangeRequest request, Model model, HttpSession session) {
         String username = (String) session.getAttribute("resetUsername");
 
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
