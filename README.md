@@ -189,3 +189,31 @@
           new UsernamePasswordAuthenticationToken(username, null, auths);
       SecurityContextHolder.getContext().setAuthentication(token);
   }
+
+
+---
+
+## 🤖 MCP 서버 연동 현황
+
+### 2025.09 ~ 진행 중
+✅ **MCP 서버(Model Context Protocol) 연동 작업 시작**  
+- `MariaDB MCP 서버` 및 `SQLite MCP 서버` 기반 테스트 완료  
+- `mcp-server-connection` 브랜치에서 통합 개발 진행  
+- 백엔드(Spring Boot) ↔ MCP 서버 ↔ LLM(ChatGPT/Claude) 구조 설계 중  
+
+✅ **백엔드 연동**  
+- Spring Boot에서 사용자 질문을 수신 → MCP 서버 호출 → DB 질의 실행 → 결과 반환  
+- 자연어 질의를 SQL로 변환 후, DB 조회 응답을 ChatGPT API를 통해 최종 응답 생성  
+- 보안상 LLM이 DB에 직접 접근하지 않고, **백엔드 ↔ MCP 서버**를 통해서만 접근  
+
+✅ **챗봇 위젯 기능 개발**  
+- React 기반 **챗봇 위젯 UI** 제작 중  
+- 프론트엔드에서 사용자 입력 → 백엔드 API(`/chatbot/ask`) 호출 → MCP 서버 응답 반환  
+- 답변을 실시간 대화 UI로 표시  
+- MCP 서버와 연결된 DB에 기반해 **실제 저장된 데이터만으로 답변** 제공  
+
+📌 현재는 **MCP 서버 연동 중**이며,  
+- 게임 관련 DB(아이템 정보, 드랍 정보 등)  
+데이터를 MCP 서버에 연결하여 챗봇이 질의응답 가능하도록 확장하는 작업을 진행 중입니다.  
+
+---
