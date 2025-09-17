@@ -25,7 +25,6 @@ public class MemberController {
 
     private final MemberService memberService;
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
     @GetMapping("/hello")
@@ -47,18 +46,29 @@ public class MemberController {
 
     @PostMapping("/api/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-        Member member = memberRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new RuntimeException("유저 없음"));
+        // [1] 서비스에서 로그인 처리 (아이디/비번 확인 후 Optional<Member> 반환)
+        Optional<Member> optionalMember = memberService.login(loginRequest);
 
-        if (!passwordEncoder.matches(loginRequest.getPassword(), member.getPassword())) {
+        // [2] 로그인 실패 시 401 Unauthorized 응답
+        if (optionalMember.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        // [3] 로그인 성공 시 Member 객체 꺼냄
+        Member member = optionalMember.get();
+
+        // [4] JWT 토큰 생성 (username, role 등을 기반으로)
         String token = jwtUtil.generateToken(member);
+
+        // [5] 사용자 권한을 문자열로 리스트화
         List<String> roles = List.of(member.getRole().name());
 
+        // [6] 응답에 엔티티 직접 반환 ❌ → DTO(LoginResponse)로 변환해서 응답 ✅
         return ResponseEntity.ok(new LoginResponse(token, member.getNickname(), roles));
     }
+
+
+
 
 
     @PostMapping("/api/find-id")
