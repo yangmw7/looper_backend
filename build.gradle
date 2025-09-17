@@ -24,18 +24,36 @@ repositories {
 }
 
 dependencies {
+	// ✅ JWT 토큰
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	// ✅ 스프링 시큐리티
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'com.h2database:h2'
+
+	// ✅ 머스타치, 웹, JPA, 검증
 	implementation 'org.springframework.boot:spring-boot-starter-mustache'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+//	// ✅ MySQL 드라이버
+//	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// MariaDB 드라이버
+	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
+	// ✅ 개발 도구, 롬복
 	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// ✅ 테스트
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+
 }
 
 tasks.named('test') {

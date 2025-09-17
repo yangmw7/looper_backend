@@ -1,5 +1,5 @@
+// src/main/java/com/example/game_backend/repository/entity/Post.java
 package com.example.game_backend.repository.entity;
-
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,6 +8,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -36,5 +38,22 @@ public class Post {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
-}
 
+    /** 이미지 매핑 유지 */
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "post",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Image> images = new ArrayList<>();
+
+    /** 댓글 매핑 추가: Post 삭제 시 댓글도 함께 삭제됩니다 */
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "post",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Comment> comments = new ArrayList<>();
+}
