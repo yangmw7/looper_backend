@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface MemberService {
 
     String join(JoinRequest joinRequest);
-    boolean login(LoginRequest loginRequest);
+    Optional<Member> login(LoginRequest loginRequest);
 
     Optional<Member> findByEmail(String email);
 
