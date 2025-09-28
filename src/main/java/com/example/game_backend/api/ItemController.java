@@ -4,6 +4,9 @@ import com.example.game_backend.controller.dto.ItemRequest;
 import com.example.game_backend.controller.dto.ItemResponse;
 import com.example.game_backend.service.ItemService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,28 +17,47 @@ import java.util.List;
 public class ItemController {
     private final ItemService itemService;
 
-    @PostMapping
-    public ItemResponse createItem(@RequestBody ItemRequest request) {
-        return itemService.createItem(request);
-    }
-
-    @GetMapping("/{id}")
-    public ItemResponse getItem(@PathVariable String id) {
-        return itemService.getItem(id);
-    }
-
+    // ========== 모든 사용자 접근 가능 (게임 가이드용) ==========
     @GetMapping
     public List<ItemResponse> getAllItems() {
         return itemService.getAllItems();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ItemResponse> getItem(@PathVariable String id) {
+        ItemResponse item = itemService.getItem(id);
+        if (item == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(item);
+    }
+
+    // ========== 관리자만 접근 가능 (관리 기능) ==========
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createItem(@RequestBody ItemRequest request) {
+        try {
+            ItemResponse created = itemService.createItem(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
     @PutMapping("/{id}")
-    public ItemResponse updateItem(@PathVariable String id, @RequestBody ItemRequest request) {
-        return itemService.updateItem(id, request);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateItem(@PathVariable String id, @RequestBody ItemRequest request) {
+        ItemResponse updated = itemService.updateItem(id, request);
+        if (updated == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteItem(@PathVariable String id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteItem(@PathVariable String id) {
         itemService.deleteItem(id);
+        return ResponseEntity.noContent().build();
     }
 }

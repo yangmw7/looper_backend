@@ -15,7 +15,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")       // /api/** 경로로 들어오는 요청만 허용
-                .allowedOrigins("http://localhost:5173") // React dev 서버 주소
+                .allowedOrigins("http://localhost:5173", "https://looper-game.duckdns.org") // React dev 서버 주소
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")              // 모든 헤더 허용 (Authorization 포함)
                 .allowCredentials(true);          // 쿠키(Cookie) 인증도 허용 (필요 시)
