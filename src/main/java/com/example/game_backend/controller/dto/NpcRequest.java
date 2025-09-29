@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 public class NpcRequest {
+    private String id;
     private List<String> name;
     private float hp;
     private float atk;

@@ -4,13 +4,12 @@ import com.example.game_backend.controller.dto.NpcRequest;
 import com.example.game_backend.controller.dto.NpcResponse;
 import com.example.game_backend.repository.NpcRepository;
 import com.example.game_backend.repository.entity.Npc;
-import com.example.game_backend.service.NpcService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +34,17 @@ public class NpcServiceImpl implements NpcService {
     @Override
     public NpcResponse createNpc(NpcRequest request) {
         Npc npc = new Npc();
-        npc.setId(UUID.randomUUID().toString());
+
+        // 관리자가 직접 ID 입력 → 중복 검사
+        if (request.getId() == null || request.getId().isBlank()) {
+            throw new IllegalArgumentException("NPC ID는 반드시 입력해야 합니다.");
+        }
+        if (npcRepository.existsById(request.getId())) {
+            throw new DuplicateKeyException("이미 존재하는 NPC ID입니다: " + request.getId());
+        }
+        npc.setId(request.getId());
+
+        // 나머지 속성들 설정
         npc.setName(request.getName());
         npc.setHp(request.getHp());
         npc.setAtk(request.getAtk());

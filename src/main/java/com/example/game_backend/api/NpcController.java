@@ -41,7 +41,9 @@ public class NpcController {
             NpcResponse created = npcService.createNpc(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (DuplicateKeyException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 존재하는 NPC ID입니다.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
