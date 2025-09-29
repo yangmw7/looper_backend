@@ -6,9 +6,9 @@ import com.example.game_backend.controller.dto.NpcResponse;
 import java.util.List;
 
 public interface NpcService {
-    NpcResponse createNpc(NpcRequest request);
-    NpcResponse getNpc(String id);
     List<NpcResponse> getAllNpcs();
+    NpcResponse getNpc(String id);
+    NpcResponse createNpc(NpcRequest request);
     NpcResponse updateNpc(String id, NpcRequest request);
     void deleteNpc(String id);
 }

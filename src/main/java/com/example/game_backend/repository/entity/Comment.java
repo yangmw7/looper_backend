@@ -18,7 +18,7 @@ public class Comment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
-    private Post post; // ✅ 이 필드가 있어야 .post()가 된다
+    private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -42,3 +42,4 @@ public class Comment {
         this.updatedAt = LocalDateTime.now();
     }
 }
+
