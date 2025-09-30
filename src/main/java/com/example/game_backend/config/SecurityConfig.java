@@ -29,7 +29,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1) CORS, CSRF 설정
+                // 1) CORS, CSRF 설정 (람다식)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
 
@@ -41,9 +41,17 @@ public class SecurityConfig {
                         // 관리자 페이지 API
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // 아이템/NPC 관리 API 전체 관리자만 허용 (GET 포함)
+                        // 아이템 API → GET은 전체 허용, 나머지는 관리자 전용
                         .requestMatchers("/api/items/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/skills/**").permitAll()
+                        // NPC API → GET은 전체 허용, 나머지는 관리자 전용
+
                         .requestMatchers("/api/npcs/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/skills/**").permitAll()
+
+                        // 스킬 API → GET은 전체 허용, 나머지는 관리자 전용
+                        .requestMatchers(HttpMethod.GET, "/api/skills/**").permitAll()
+                        .requestMatchers("/api/skills/**").hasRole("ADMIN")
 
                         // OPTIONS 요청은 CORS preflight용으로 항상 허용
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
