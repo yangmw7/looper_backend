@@ -29,24 +29,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1) CORS, CSRF 설정
-                .cors().and()
-                .csrf().disable()
+                // 1) CORS, CSRF 설정 (람다식)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
 
                 // 2) URL별 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // /admin/** 은 ADMIN만
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // ADMIN 전용
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // 그 외 모든 요청은 인증 없이 허용
-                        .anyRequest().permitAll()
+                        .anyRequest().permitAll() // 기본은 모두 허용
                 )
 
                 // 3) 기본 로그아웃 비활성화
                 .logout(logout -> logout.disable())
 
                 // 4) H2 콘솔용 frameOptions 비활성화
-                .headers().frameOptions().disable();
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         // 5) JWT 인증 필터 등록
         http.addFilterBefore(
@@ -60,7 +58,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173","https://looper-game.duckdns.org"));
+        config.setAllowedOrigins(List.of("http://localhost:5173", "https://looper-game.duckdns.org"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

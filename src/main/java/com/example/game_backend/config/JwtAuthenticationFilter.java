@@ -54,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
         } catch (Exception e) {
-            System.out.println("❌ JWT 인증 실패: " + e.getMessage());
+            System.out.println("JWT 인증 실패: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);

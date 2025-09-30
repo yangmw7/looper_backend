@@ -15,20 +15,29 @@ import java.util.List;
 public class JwtUtil {
     private final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-    // Member 객체를 받아서 subject, nickname, roles 클레임 추가
-    public String generateToken(Member member) {
+    private final long ACCESS_TOKEN_EXP = 1000 * 60 * 30;       // 30분
+    private final long REFRESH_TOKEN_EXP = 1000 * 60 * 60 * 24 * 7; // 7일
+
+    // Access Token 발급
+    public String generateAccessToken(Member member) {
         return Jwts.builder()
                 .setSubject(member.getUsername())
                 .claim("nickname", member.getNickname())
                 .claim("roles", List.of(member.getRole().name()))
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 3600000))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXP))
                 .signWith(SECRET_KEY)
                 .compact();
     }
 
-    public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
+    // Refresh Token 발급
+    public String generateRefreshToken(Member member) {
+        return Jwts.builder()
+                .setSubject(member.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXP))
+                .signWith(SECRET_KEY)
+                .compact();
     }
 
     public Claims extractAllClaims(String token) {
@@ -37,5 +46,13 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
+    }
+
+    public boolean isTokenExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new Date());
     }
 }
