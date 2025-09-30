@@ -17,22 +17,25 @@ public class SkillServiceImpl implements SkillService {
 
     private final SkillRepository skillRepository;
 
+    // ===== Entity → Response 변환 =====
     private SkillResponse toResponse(Skill skill) {
         return SkillResponse.builder()
                 .id(skill.getId())
-                .name(skill.getName())
-                .description(skill.getDescription())
+                .name(skill.getName() != null ? skill.getName() : List.of("", ""))
+                .description(skill.getDescription() != null ? skill.getDescription() : List.of("", ""))
                 .build();
     }
 
+    // ===== Request → Entity 변환 =====
     private Skill toEntity(SkillRequest request) {
-        return Skill.builder()
-                .id(request.getId())
-                .name(request.getName())
-                .description(request.getDescription())
-                .build();
+        Skill skill = new Skill();
+        skill.setId(request.getId());
+        skill.setName(request.getName());               // setter가 nameJson 자동 동기화
+        skill.setDescription(request.getDescription()); // setter가 descriptionJson 자동 동기화
+        return skill;
     }
 
+    // ===== CREATE =====
     @Override
     @Transactional
     public SkillResponse createSkill(SkillRequest request) {
@@ -47,6 +50,7 @@ public class SkillServiceImpl implements SkillService {
         }
     }
 
+    // ===== READ (단건) =====
     @Override
     public SkillResponse getSkill(String id) {
         return skillRepository.findById(id)
@@ -54,6 +58,7 @@ public class SkillServiceImpl implements SkillService {
                 .orElse(null);
     }
 
+    // ===== READ (전체) =====
     @Override
     public List<SkillResponse> getAllSkills() {
         return skillRepository.findAll().stream()
@@ -61,16 +66,18 @@ public class SkillServiceImpl implements SkillService {
                 .toList();
     }
 
+    // ===== UPDATE =====
     @Override
     @Transactional
     public SkillResponse updateSkill(String id, SkillRequest request) {
         return skillRepository.findById(id).map(skill -> {
-            skill.setName(request.getName());
-            skill.setDescription(request.getDescription());
+            skill.setName(request.getName());               // setter → JSON 반영
+            skill.setDescription(request.getDescription()); // setter → JSON 반영
             return toResponse(skillRepository.save(skill));
         }).orElse(null);
     }
 
+    // ===== DELETE =====
     @Override
     public void deleteSkill(String id) {
         skillRepository.deleteById(id);
