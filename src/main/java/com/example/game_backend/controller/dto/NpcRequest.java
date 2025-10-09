@@ -15,4 +15,5 @@ public class NpcRequest {
     private float def;
     private float spd;
     private List<String> features;
+    private String imageUrl;
 }

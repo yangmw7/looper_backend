@@ -22,7 +22,6 @@ public class Item {
 
     private boolean stackable;
 
-    // 구글 드라이브 이미지 URL 추가
     @Column(name = "image_url")
     private String imageUrl;
 

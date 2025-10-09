@@ -2,13 +2,15 @@ package com.example.game_backend.service;
 
 import com.example.game_backend.controller.dto.NpcRequest;
 import com.example.game_backend.controller.dto.NpcResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface NpcService {
     List<NpcResponse> getAllNpcs();
     NpcResponse getNpc(String id);
-    NpcResponse createNpc(NpcRequest request);
-    NpcResponse updateNpc(String id, NpcRequest request);
+    NpcResponse createNpc(NpcRequest request, MultipartFile imageFile);
+    NpcResponse updateNpc(String id, NpcRequest request, MultipartFile imageFile);
+
     void deleteNpc(String id);
 }

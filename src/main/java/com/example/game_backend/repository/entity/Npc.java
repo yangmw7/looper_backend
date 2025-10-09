@@ -33,6 +33,9 @@ public class Npc {
     @Column(name = "features")
     private String featuresJson;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     // name getter/setter
     @Transient
     public List<String> getName() {
@@ -79,4 +82,3 @@ public class Npc {
         }
     }
 }
-

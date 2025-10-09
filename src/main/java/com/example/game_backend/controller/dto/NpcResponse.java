@@ -17,4 +17,5 @@ public class NpcResponse {
     private float def;
     private float spd;
     private List<String> features;
+    private String imageUrl;
 }

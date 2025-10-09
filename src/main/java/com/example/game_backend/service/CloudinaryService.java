@@ -22,17 +22,26 @@ public class CloudinaryService {
      */
     public String uploadImage(MultipartFile file, String publicId) {
         try {
-            // public_id에서 폴더 구분 (post_ 로 시작하면 looper-posts 폴더, 아니면 looper-items)
-            String folder = publicId.startsWith("post_") ? "looper-posts" : "looper-items";
+            // ✅ public_id 접두어에 따라 폴더 동적 분기
+            String folder;
+            if (publicId.startsWith("post_")) {
+                folder = "looper-posts";
+            } else if (publicId.startsWith("npc_")) {
+                folder = "looper-npcs";
+            } else {
+                folder = "looper-items";
+            }
 
             // 파일 업로드
-            Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+            Map uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
                     ObjectUtils.asMap(
                             "folder", folder,            // 동적 폴더 이름
                             "public_id", publicId,       // 파일 ID
                             "overwrite", true,           // 같은 ID면 덮어쓰기
                             "resource_type", "auto"      // 자동 타입 감지
-                    ));
+                    )
+            );
 
             String imageUrl = (String) uploadResult.get("secure_url");
             log.info("이미지 업로드 성공: folder={}, url={}", folder, imageUrl);

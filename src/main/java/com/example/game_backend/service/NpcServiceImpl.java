@@ -5,17 +5,22 @@ import com.example.game_backend.controller.dto.NpcResponse;
 import com.example.game_backend.repository.NpcRepository;
 import com.example.game_backend.repository.entity.Npc;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NpcServiceImpl implements NpcService {
 
     private final NpcRepository npcRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     public List<NpcResponse> getAllNpcs() {
@@ -32,36 +37,48 @@ public class NpcServiceImpl implements NpcService {
     }
 
     @Override
-    public NpcResponse createNpc(NpcRequest request) {
-        Npc npc = new Npc();
-
-        // 관리자가 직접 ID 입력 → 중복 검사
+    @Transactional
+    public NpcResponse createNpc(NpcRequest request, MultipartFile imageFile) {
+        // ID 중복 검사
         if (request.getId() == null || request.getId().isBlank()) {
             throw new IllegalArgumentException("NPC ID는 반드시 입력해야 합니다.");
         }
         if (npcRepository.existsById(request.getId())) {
             throw new DuplicateKeyException("이미 존재하는 NPC ID입니다: " + request.getId());
         }
-        npc.setId(request.getId());
 
-        // 나머지 속성들 설정
+        // Cloudinary에 이미지 업로드
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imageUrl = cloudinaryService.uploadImage(imageFile, "npc_" + request.getId());
+            request.setImageUrl(imageUrl);
+            log.info("NPC {} 이미지 업로드 완료: {}", request.getId(), imageUrl);
+        }
+
+        Npc npc = new Npc();
+        npc.setId(request.getId());
         npc.setName(request.getName());
         npc.setHp(request.getHp());
         npc.setAtk(request.getAtk());
         npc.setDef(request.getDef());
         npc.setSpd(request.getSpd());
         npc.setFeatures(request.getFeatures());
+        npc.setImageUrl(request.getImageUrl());
 
         npcRepository.save(npc);
         return toResponse(npc);
     }
 
     @Override
-    public NpcResponse updateNpc(String id, NpcRequest request) {
+    @Transactional
+    public NpcResponse updateNpc(String id, NpcRequest request, MultipartFile imageFile) {
         Optional<Npc> optionalNpc = npcRepository.findById(id);
         if (optionalNpc.isEmpty()) return null;
 
         Npc npc = optionalNpc.get();
+
+        // 기존 이미지 URL 저장 (삭제용)
+        String oldImageUrl = npc.getImageUrl();
+
         npc.setName(request.getName());
         npc.setHp(request.getHp());
         npc.setAtk(request.getAtk());
@@ -69,13 +86,34 @@ public class NpcServiceImpl implements NpcService {
         npc.setSpd(request.getSpd());
         npc.setFeatures(request.getFeatures());
 
+        // 새 이미지 업로드
+        if (imageFile != null && !imageFile.isEmpty()) {
+            // 기존 이미지 삭제
+            if (oldImageUrl != null) {
+                cloudinaryService.deleteImage(oldImageUrl);
+            }
+
+            // 새 이미지 업로드
+            String newImageUrl = cloudinaryService.uploadImage(imageFile, "npc_" + id);
+            npc.setImageUrl(newImageUrl);
+            log.info("NPC {} 이미지 업데이트 완료: {}", id, newImageUrl);
+        }
+
         npcRepository.save(npc);
         return toResponse(npc);
     }
 
     @Override
+    @Transactional
     public void deleteNpc(String id) {
-        npcRepository.deleteById(id);
+        npcRepository.findById(id).ifPresent(npc -> {
+            // Cloudinary 이미지 삭제
+            if (npc.getImageUrl() != null) {
+                cloudinaryService.deleteImage(npc.getImageUrl());
+                log.info("NPC {} 이미지 삭제 완료", id);
+            }
+            npcRepository.deleteById(id);
+        });
     }
 
     private NpcResponse toResponse(Npc npc) {
@@ -86,7 +124,8 @@ public class NpcServiceImpl implements NpcService {
                 npc.getAtk(),
                 npc.getDef(),
                 npc.getSpd(),
-                npc.getFeatures()
+                npc.getFeatures(),
+                npc.getImageUrl()
         );
     }
 }
