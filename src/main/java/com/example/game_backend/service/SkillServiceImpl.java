@@ -5,17 +5,21 @@ import com.example.game_backend.controller.dto.SkillResponse;
 import com.example.game_backend.repository.SkillRepository;
 import com.example.game_backend.repository.entity.Skill;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SkillServiceImpl implements SkillService {
 
     private final SkillRepository skillRepository;
+    private final CloudinaryService cloudinaryService;
 
     // ===== Entity → Response 변환 =====
     private SkillResponse toResponse(Skill skill) {
@@ -23,6 +27,7 @@ public class SkillServiceImpl implements SkillService {
                 .id(skill.getId())
                 .name(skill.getName() != null ? skill.getName() : List.of("", ""))
                 .description(skill.getDescription() != null ? skill.getDescription() : List.of("", ""))
+                .imageUrl(skill.getImageUrl())
                 .build();
     }
 
@@ -30,23 +35,36 @@ public class SkillServiceImpl implements SkillService {
     private Skill toEntity(SkillRequest request) {
         Skill skill = new Skill();
         skill.setId(request.getId());
-        skill.setName(request.getName());               // setter가 nameJson 자동 동기화
-        skill.setDescription(request.getDescription()); // setter가 descriptionJson 자동 동기화
+        skill.setName(request.getName());
+        skill.setDescription(request.getDescription());
+        skill.setImageUrl(request.getImageUrl());
         return skill;
     }
 
     // ===== CREATE =====
     @Override
     @Transactional
-    public SkillResponse createSkill(SkillRequest request) {
+    public SkillResponse createSkill(SkillRequest request, MultipartFile imageFile) {
         try {
             if (skillRepository.existsById(request.getId())) {
                 throw new IllegalArgumentException("이미 존재하는 스킬 ID입니다: " + request.getId());
             }
-            Skill saved = skillRepository.save(toEntity(request));
+
+            Skill skill = toEntity(request);
+
+            // Cloudinary 업로드 (폴더 자동 분기)
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String imageUrl = cloudinaryService.uploadImage(imageFile, "skill_" + request.getId());
+                skill.setImageUrl(imageUrl);
+            }
+
+            Skill saved = skillRepository.save(skill);
             return toResponse(saved);
+
         } catch (DataIntegrityViolationException e) {
             throw new IllegalArgumentException("이미 존재하는 스킬 ID입니다: " + request.getId());
+        } catch (Exception e) {
+            throw new RuntimeException("스킬 생성 실패: " + e.getMessage(), e);
         }
     }
 
@@ -69,17 +87,39 @@ public class SkillServiceImpl implements SkillService {
     // ===== UPDATE =====
     @Override
     @Transactional
-    public SkillResponse updateSkill(String id, SkillRequest request) {
+    public SkillResponse updateSkill(String id, SkillRequest request, MultipartFile imageFile) {
         return skillRepository.findById(id).map(skill -> {
-            skill.setName(request.getName());               // setter → JSON 반영
-            skill.setDescription(request.getDescription()); // setter → JSON 반영
-            return toResponse(skillRepository.save(skill));
+            skill.setName(request.getName());
+            skill.setDescription(request.getDescription());
+
+            try {
+                if (imageFile != null && !imageFile.isEmpty()) {
+                    // 기존 이미지 삭제
+                    if (skill.getImageUrl() != null) {
+                        cloudinaryService.deleteImage(skill.getImageUrl());
+                    }
+
+                    // 새 이미지 업로드 (폴더 자동 분기)
+                    String newImageUrl = cloudinaryService.uploadImage(imageFile, "skill_" + id);
+                    skill.setImageUrl(newImageUrl);
+                }
+            } catch (Exception e) {
+                log.error("스킬 이미지 수정 실패: {}", e.getMessage());
+            }
+
+            Skill updated = skillRepository.save(skill);
+            return toResponse(updated);
         }).orElse(null);
     }
 
     // ===== DELETE =====
     @Override
     public void deleteSkill(String id) {
-        skillRepository.deleteById(id);
+        skillRepository.findById(id).ifPresent(skill -> {
+            if (skill.getImageUrl() != null) {
+                cloudinaryService.deleteImage(skill.getImageUrl());
+            }
+            skillRepository.delete(skill);
+        });
     }
 }

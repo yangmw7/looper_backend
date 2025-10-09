@@ -12,7 +12,6 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-// @Builder 제거 또는 아래처럼 수정
 public class Skill {
 
     @Id
@@ -24,13 +23,16 @@ public class Skill {
     @Column(name = "description", columnDefinition = "longtext")
     private String descriptionJson;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Transient
     private List<String> name;
 
     @Transient
     private List<String> description;
 
-    // Setter를 명시적으로 호출하도록 수정
+    // ===== Setter =====
     public void setName(List<String> name) {
         this.name = name;
         try {
@@ -51,11 +53,15 @@ public class Skill {
         }
     }
 
-    // setId는 일반 Setter
     public void setId(String id) {
         this.id = id;
     }
 
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    // ===== JSON 변환 =====
     @PostLoad
     private void parseJson() {
         try {
@@ -76,11 +82,9 @@ public class Skill {
         }
     }
 
-    // @PrePersist/@PreUpdate는 백업용으로만
     @PrePersist
     @PreUpdate
     private void ensureJsonSync() {
-        // Setter에서 이미 변환했지만, 혹시 모를 경우를 대비
         if (name != null && nameJson == null) {
             try {
                 ObjectMapper mapper = new ObjectMapper();
