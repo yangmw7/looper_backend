@@ -6,26 +6,20 @@ import com.example.game_backend.repository.entity.Image;
 import com.example.game_backend.repository.entity.Member;
 import com.example.game_backend.repository.entity.Post;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
-
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     @Transactional
@@ -67,18 +61,22 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("게시글 없음"));
 
-        // 제목/내용 업데이트
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setUpdatedAt(LocalDateTime.now());
 
-        // 삭제 로직: keepUrls null 처리
         List<String> keepUrls = request.getKeepImageUrls() != null
                 ? request.getKeepImageUrls()
                 : new ArrayList<>();
-        post.getImages().removeIf(img -> !keepUrls.contains(img.getFilePath()));
 
-        // 새 이미지 추가 로직
+        post.getImages().removeIf(img -> {
+            if (!keepUrls.contains(img.getFilePath())) {
+                cloudinaryService.deleteImage(img.getFilePath());
+                return true;
+            }
+            return false;
+        });
+
         MultipartFile[] newFiles = request.getImageFiles();
         if (newFiles != null) {
             for (MultipartFile f : newFiles) {
@@ -93,31 +91,28 @@ public class PostServiceImpl implements PostService {
                 }
             }
         }
-        // 변경 감지로 자동 저장
+    }
+
+    @Override
+    @Transactional
+    public void deletePost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("게시글 없음"));
+
+        // 게시글에 연결된 모든 이미지를 Cloudinary에서 삭제
+        if (post.getImages() != null) {
+            for (Image image : post.getImages()) {
+                cloudinaryService.deleteImage(image.getFilePath());
+            }
+        }
+
+        // DB에서 게시글 삭제 (cascade로 Image도 함께 삭제됨)
+        postRepository.deleteById(postId);
     }
 
     @Override
     public String storeFileAndGetUrl(MultipartFile file) {
-        try {
-            Path root = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
-            Path uploadPath = root.resolve(uploadDir);
-
-            if (Files.notExists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            String orig = file.getOriginalFilename();
-            String ext = (orig != null && orig.contains("."))
-                    ? orig.substring(orig.lastIndexOf("."))
-                    : "";
-            String savedName = UUID.randomUUID().toString() + ext;
-            Path target = uploadPath.resolve(savedName);
-
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-            return "/images/" + savedName;
-
-        } catch (IOException e) {
-            throw new RuntimeException("파일 저장 실패", e);
-        }
+        String uniqueId = "post_" + System.currentTimeMillis();
+        return cloudinaryService.uploadImage(file, uniqueId);
     }
 }

@@ -17,6 +17,7 @@ public class ItemResponse {
     private List<String> description;
     private List<String> skills;
     private List<AttributeDto> attributes;
+    private String imageUrl;  // 이미지 URL 추가
 
     @Getter @Setter
     @AllArgsConstructor

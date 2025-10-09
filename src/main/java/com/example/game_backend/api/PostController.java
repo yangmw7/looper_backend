@@ -1,4 +1,3 @@
-// src/main/java/com/example/game_backend/api/PostController.java
 package com.example.game_backend.api;
 
 import com.example.game_backend.controller.dto.PostRequest;
@@ -52,7 +51,7 @@ public class PostController {
                     List<String> urls = post.getImages().stream()
                             .map(Image::getFilePath)
                             .collect(Collectors.toList());
-                    long commentCount = post.getComments().size();  // 댓글 수
+                    long commentCount = post.getComments().size();
                     return PostResponse.builder()
                             .id(post.getId())
                             .title(post.getTitle())
@@ -62,7 +61,7 @@ public class PostController {
                             .createdAt(post.getCreatedAt())
                             .updatedAt(post.getUpdatedAt())
                             .imageUrls(urls)
-                            .commentCount(commentCount)                 // ← 추가
+                            .commentCount(commentCount)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -81,7 +80,7 @@ public class PostController {
         List<String> urls = post.getImages().stream()
                 .map(Image::getFilePath)
                 .collect(Collectors.toList());
-        long commentCount = post.getComments().size();      // 댓글 수
+        long commentCount = post.getComments().size();
 
         PostResponse res = PostResponse.builder()
                 .id(post.getId())
@@ -92,7 +91,7 @@ public class PostController {
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .imageUrls(urls)
-                .commentCount(commentCount)                     // ← 추가
+                .commentCount(commentCount)
                 .build();
         return ResponseEntity.ok(res);
     }
@@ -101,7 +100,23 @@ public class PostController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id,
                                        @RequestHeader("Authorization") String authHeader) {
-        postRepository.deleteById(id);
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(token);
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+
+        Post existing = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글 없음"));
+
+        // 본인 또는 관리자만 삭제 가능
+        if (!existing.getWriter().getId().equals(member.getId()) &&
+                !member.getRole().name().equals("ADMIN")) {
+            return ResponseEntity.status(403).build();
+        }
+
+        // 변경: postService.deletePost 호출 (Cloudinary 이미지도 함께 삭제)
+        postService.deletePost(id);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -123,7 +138,9 @@ public class PostController {
 
         Post existing = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("게시글 없음"));
-        if (!existing.getWriter().equals(member.getNickname())) {
+
+        // ✅ 수정: ID로 비교
+        if (!existing.getWriter().getId().equals(member.getId())) {
             return ResponseEntity.status(403).body("권한 없음");
         }
 

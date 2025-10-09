@@ -30,6 +30,9 @@ public class ItemRequest {
     @NotEmpty(message = "속성은 최소 1개 이상 필요합니다.")
     private List<AttributeDto> attributes;
 
+    // 이미지 URL (업로드 후 자동으로 설정됨)
+    private String imageUrl;
+
     @Getter @Setter
     public static class AttributeDto {
         @NotBlank(message = "stat은 필수입니다.")

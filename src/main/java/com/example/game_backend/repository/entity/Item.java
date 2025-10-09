@@ -8,7 +8,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "items")
-@Getter @Setter
+@Getter
+@Setter
 public class Item {
 
     @Id
@@ -20,6 +21,10 @@ public class Item {
     private boolean twoHander;
 
     private boolean stackable;
+
+    // 구글 드라이브 이미지 URL 추가
+    @Column(name = "image_url")
+    private String imageUrl;
 
     // 관계 매핑
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
