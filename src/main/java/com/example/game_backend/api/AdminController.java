@@ -43,7 +43,7 @@
                             .id(post.getId())
                             .title(post.getTitle())
                             .content(post.getContent())
-                            .writer(post.getWriter())
+                            .writer(post.getWriter().getNickname())
                             .viewCount(post.getViewCount())
                             .createdAt(post.getCreatedAt())
                             .updatedAt(post.getUpdatedAt())

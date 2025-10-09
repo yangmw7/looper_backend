@@ -36,6 +36,9 @@ public class SecurityConfig {
                         // 인증/회원가입/토큰 재발급은 모두 허용
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        // 신고하기: 로그인 유저만 가능
+                        .requestMatchers("/api/reports/**").authenticated()
+
                         // 관리자 페이지 API
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
@@ -71,7 +74,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:5174", "https://looper-game.duckdns.org"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 

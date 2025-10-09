@@ -3,6 +3,7 @@ package com.example.game_backend.service;
 import com.example.game_backend.controller.dto.PostRequest;
 import com.example.game_backend.repository.PostRepository;
 import com.example.game_backend.repository.entity.Image;
+import com.example.game_backend.repository.entity.Member;
 import com.example.game_backend.repository.entity.Post;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +29,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public Long save(PostRequest request, String writer) {
+    public Long save(PostRequest request, Member writer) {
         Post post = Post.builder()
                 .title(request.getTitle())
                 .content(request.getContent())

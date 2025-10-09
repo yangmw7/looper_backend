@@ -1,4 +1,3 @@
-// src/main/java/com/example/game_backend/repository/entity/Post.java
 package com.example.game_backend.repository.entity;
 
 import jakarta.persistence.*;
@@ -29,7 +28,10 @@ public class Post {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    private String writer;
+    /** 작성자(Member와 매핑) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "writer_id", nullable = false)
+    private Member writer;
 
     private int viewCount;
 
@@ -41,19 +43,11 @@ public class Post {
 
     /** 이미지 매핑 유지 */
     @Builder.Default
-    @OneToMany(
-            mappedBy = "post",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
-    /** 댓글 매핑 추가: Post 삭제 시 댓글도 함께 삭제됩니다 */
+    /** 댓글 매핑 추가 */
     @Builder.Default
-    @OneToMany(
-            mappedBy = "post",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 }

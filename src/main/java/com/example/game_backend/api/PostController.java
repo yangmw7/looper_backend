@@ -40,7 +40,7 @@ public class PostController {
         Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
-        Long id = postService.save(postRequest, member.getNickname());
+        Long id = postService.save(postRequest, member);
         return ResponseEntity.ok(id);
     }
 
@@ -57,7 +57,7 @@ public class PostController {
                             .id(post.getId())
                             .title(post.getTitle())
                             .content(post.getContent())
-                            .writer(post.getWriter())
+                            .writer(post.getWriter().getNickname())
                             .viewCount(post.getViewCount())
                             .createdAt(post.getCreatedAt())
                             .updatedAt(post.getUpdatedAt())
@@ -87,7 +87,7 @@ public class PostController {
                 .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .writer(post.getWriter())
+                .writer(post.getWriter().getNickname())
                 .viewCount(post.getViewCount())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
