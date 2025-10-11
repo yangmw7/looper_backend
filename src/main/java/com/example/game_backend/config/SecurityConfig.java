@@ -20,6 +20,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter; // 추가: 스프링 빈으로 주입
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -35,6 +36,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 인증/회원가입/토큰 재발급은 모두 허용
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // 마이페이지: 로그인 유저만 가능 (추가)
+                        .requestMatchers("/api/mypage/**").authenticated()
 
                         // 신고하기: 로그인 유저만 가능
                         .requestMatchers("/api/reports/**").authenticated()
@@ -62,8 +66,9 @@ public class SecurityConfig {
                 .logout(logout -> logout.disable())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
+        // 수정: 스프링 빈으로 주입받은 필터 사용
         http.addFilterBefore(
-                new JwtAuthenticationFilter(jwtUtil),
+                jwtAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class
         );
 

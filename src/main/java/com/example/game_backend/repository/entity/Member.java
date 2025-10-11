@@ -10,13 +10,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@EntityListeners(AuditingEntityListener.class)   // ← Auditing 리스너 등록
+@EntityListeners(AuditingEntityListener.class)
 public class Member {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "userid", nullable = false, unique = true)
@@ -36,9 +39,19 @@ public class Member {
     @Builder.Default
     private Role role = Role.USER;
 
-    // ────────────────────────────────────
-    // 가입일자 자동 생성 필드
     @CreatedDate
-    @Column(updatable = false)              // 수정 불가
+    @Column(updatable = false)
     private LocalDateTime createdDate;
+
+    // PlayerStats와 1:1 양방향 관계
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private PlayerStats playerStats;
+
+    // 편의 메서드
+    public void setPlayerStats(PlayerStats playerStats) {
+        this.playerStats = playerStats;
+        if (playerStats != null) {
+            playerStats.setMember(this);
+        }
+    }
 }
