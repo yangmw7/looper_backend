@@ -13,6 +13,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/mypage")
 @RequiredArgsConstructor
@@ -70,11 +73,14 @@ public class MyPageController {
      * 비밀번호 변경
      */
     @PutMapping("/password")
-    public ResponseEntity<String> changePassword(
+    public ResponseEntity<Map<String, String>> changePassword(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody PasswordChangeRequestDto requestDto) {
 
         myPageService.changePassword(userDetails.getUsername(), requestDto);
-        return ResponseEntity.ok("비밀번호가 변경되었습니다");
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "비밀번호가 변경되었습니다");
+        return ResponseEntity.ok(response);
     }
+
 }
