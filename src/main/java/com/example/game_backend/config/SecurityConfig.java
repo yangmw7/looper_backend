@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,10 +18,11 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Configuration
+@EnableMethodSecurity  // @PreAuthorize 사용을 위해 추가
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter; // 추가: 스프링 빈으로 주입
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -37,13 +39,16 @@ public class SecurityConfig {
                         // 인증/회원가입/토큰 재발급은 모두 허용
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // 마이페이지: 로그인 유저만 가능 (추가)
+                        // 마이페이지: 로그인 유저만 가능
                         .requestMatchers("/api/mypage/**").authenticated()
 
                         // 신고하기: 로그인 유저만 가능
                         .requestMatchers("/api/reports/**").authenticated()
 
-                        // 관리자 페이지 API
+                        // 알림: 로그인 유저만 가능
+                        .requestMatchers("/api/notifications/**").authenticated()
+
+                        // 관리자 페이지 API (ADMIN 권한 필요)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // GET 요청은 모두 허용 (게임 가이드/클라이언트용)
@@ -66,7 +71,6 @@ public class SecurityConfig {
                 .logout(logout -> logout.disable())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
-        // 수정: 스프링 빈으로 주입받은 필터 사용
         http.addFilterBefore(
                 jwtAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class

@@ -5,7 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "post_reports")

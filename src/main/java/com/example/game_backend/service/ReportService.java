@@ -1,23 +1,23 @@
 package com.example.game_backend.service;
 
-import com.example.game_backend.controller.dto.report.ReportCreateRequest;
-import com.example.game_backend.controller.dto.report.ReportDto;
-import com.example.game_backend.controller.dto.report.ReportStatusUpdateRequest;
-import com.example.game_backend.repository.entity.report.ReportStatus;
+import com.example.game_backend.controller.dto.report.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
+import com.example.game_backend.repository.entity.report.ReportStatus;
 import java.util.Set;
 
+/**
+ * 사용자가 신고 제출 & 관리자가 신고 목록 조회
+ */
 public interface ReportService {
+
+    // ===== 사용자: 신고 제출 =====
     Long createPostReport(Long postId, String reporterUsername, ReportCreateRequest req);
     Long createCommentReport(Long commentId, String reporterUsername, ReportCreateRequest req);
 
+    // ===== 관리자: 신고 목록 조회 =====
     Page<ReportDto> getPostReports(Set<ReportStatus> statuses, Pageable pageable);
     Page<ReportDto> getCommentReports(Set<ReportStatus> statuses, Pageable pageable);
-    ReportDto getPostReport(Long reportId);
-    ReportDto getCommentReport(Long reportId);
-
-    void updatePostReportStatus(Long reportId, String adminUsername, ReportStatusUpdateRequest req);
-    void updateCommentReportStatus(Long reportId, String adminUsername, ReportStatusUpdateRequest req);
+    ReportDto getPostReport(Long id);
+    ReportDto getCommentReport(Long id);
 }

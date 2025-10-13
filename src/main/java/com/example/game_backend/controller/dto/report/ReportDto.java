@@ -6,12 +6,15 @@ import com.example.game_backend.repository.entity.report.ReportStatus;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+/**
+ * 관리자가 신고 목록 볼 때 사용 (상세 정보 포함)
+ */
 public record ReportDto(
         Long id,
-        String type,
-        Long targetId,
-        String targetTitle,      // 게시글 제목 (댓글은 null)
-        String targetContent,    // 게시글 내용 or 댓글 내용 전체
+        String reportType,           // POST or COMMENT
+        Long targetId,               // 게시글 ID or 댓글 ID
+        String targetTitle,          // 게시글 제목 (댓글은 null)
+        String targetContent,        // 게시글/댓글 내용
         Long reporterId,
         String reporterNickname,
         Long reportedId,
