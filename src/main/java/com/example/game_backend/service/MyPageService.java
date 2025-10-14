@@ -1,10 +1,6 @@
 package com.example.game_backend.service;
 
-import com.example.game_backend.controller.dto.PasswordChangeRequestDto;
-import com.example.game_backend.controller.dto.ProfileUpdateRequestDto;
-import com.example.game_backend.controller.dto.MyPageResponseDto;
-import com.example.game_backend.controller.dto.ProfileResponseDto;
-import com.example.game_backend.controller.dto.StatsResponseDto;
+import com.example.game_backend.controller.dto.*;
 
 public interface MyPageService {
 
@@ -22,4 +18,7 @@ public interface MyPageService {
 
     // 비밀번호 변경
     void changePassword(String username, PasswordChangeRequestDto requestDto);
+
+    // 게임 스탯 업데이트
+    StatsResponseDto updateStats(String username, StatsUpdateRequestDto requestDto);
 }

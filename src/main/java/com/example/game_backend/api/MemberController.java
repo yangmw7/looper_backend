@@ -1,19 +1,13 @@
 package com.example.game_backend.api;
 
-import com.example.game_backend.config.JwtUtil;
 import com.example.game_backend.controller.dto.FindIdRequest;
 import com.example.game_backend.controller.dto.JoinRequest;
-import com.example.game_backend.controller.dto.LoginRequest;
-import com.example.game_backend.controller.dto.LoginResponse;
 import com.example.game_backend.controller.dto.ResetPasswordChangeRequest;
 import com.example.game_backend.controller.dto.ResetPasswordRequest;
 import com.example.game_backend.repository.MemberRepository;
 import com.example.game_backend.repository.entity.Member;
 import com.example.game_backend.service.MemberService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

@@ -1,10 +1,6 @@
 package com.example.game_backend.api;
 
-import com.example.game_backend.controller.dto.PasswordChangeRequestDto;
-import com.example.game_backend.controller.dto.ProfileUpdateRequestDto;
-import com.example.game_backend.controller.dto.MyPageResponseDto;
-import com.example.game_backend.controller.dto.ProfileResponseDto;
-import com.example.game_backend.controller.dto.StatsResponseDto;
+import com.example.game_backend.controller.dto.*;
 import com.example.game_backend.service.MyPageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +25,6 @@ public class MyPageController {
     @GetMapping
     public ResponseEntity<MyPageResponseDto> getMyPage(
             @AuthenticationPrincipal UserDetails userDetails) {
-
         MyPageResponseDto response = myPageService.getMyPage(userDetails.getUsername());
         return ResponseEntity.ok(response);
     }
@@ -40,7 +35,6 @@ public class MyPageController {
     @GetMapping("/profile")
     public ResponseEntity<ProfileResponseDto> getProfile(
             @AuthenticationPrincipal UserDetails userDetails) {
-
         ProfileResponseDto response = myPageService.getProfile(userDetails.getUsername());
         return ResponseEntity.ok(response);
     }
@@ -51,7 +45,6 @@ public class MyPageController {
     @GetMapping("/stats")
     public ResponseEntity<StatsResponseDto> getStats(
             @AuthenticationPrincipal UserDetails userDetails) {
-
         StatsResponseDto response = myPageService.getStats(userDetails.getUsername());
         return ResponseEntity.ok(response);
     }
@@ -63,7 +56,6 @@ public class MyPageController {
     public ResponseEntity<ProfileResponseDto> updateProfile(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody ProfileUpdateRequestDto requestDto) {
-
         ProfileResponseDto response = myPageService.updateProfile(
                 userDetails.getUsername(), requestDto);
         return ResponseEntity.ok(response);
@@ -76,11 +68,22 @@ public class MyPageController {
     public ResponseEntity<Map<String, String>> changePassword(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody PasswordChangeRequestDto requestDto) {
-
         myPageService.changePassword(userDetails.getUsername(), requestDto);
         Map<String, String> response = new HashMap<>();
         response.put("message", "비밀번호가 변경되었습니다");
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * 게임 스탯 업데이트 (유니티에서 사용)
+     * PUT /api/mypage/stats
+     */
+    @PutMapping("/stats")
+    public ResponseEntity<StatsResponseDto> updateStats(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody StatsUpdateRequestDto requestDto) {
+        StatsResponseDto response = myPageService.updateStats(
+                userDetails.getUsername(), requestDto);
+        return ResponseEntity.ok(response);
+    }
 }
