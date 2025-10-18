@@ -10,7 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Set;
 
 @RestController
@@ -40,7 +39,7 @@ public class AdminReportController {
     }
 
     /**
-     * 댓글 신고 목록 조회
+     * 댓글 신고 목록 조회 (커뮤니티)
      */
     @GetMapping("/comments")
     public ResponseEntity<Page<ReportDto>> getCommentReports(
@@ -50,6 +49,23 @@ public class AdminReportController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<ReportDto> reports = reportService.getCommentReports(statuses, pageable);
+
+        return ResponseEntity.ok(reports);
+    }
+
+    // ========== 공지사항 댓글 신고 목록 조회 추가 ==========
+
+    /**
+     * 공지사항 댓글 신고 목록 조회
+     */
+    @GetMapping("/announcement-comments")
+    public ResponseEntity<Page<ReportDto>> getAnnouncementCommentReports(
+            @RequestParam(required = false) Set<ReportStatus> statuses,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<ReportDto> reports = reportService.getAnnouncementCommentReports(statuses, pageable);
 
         return ResponseEntity.ok(reports);
     }
@@ -66,11 +82,22 @@ public class AdminReportController {
     }
 
     /**
-     * 댓글 신고 상세 조회
+     * 댓글 신고 상세 조회 (커뮤니티)
      */
     @GetMapping("/comments/{id}")
     public ResponseEntity<ReportDto> getCommentReport(@PathVariable Long id) {
         ReportDto report = reportService.getCommentReport(id);
+        return ResponseEntity.ok(report);
+    }
+
+    // ========== 🆕 공지사항 댓글 신고 상세 조회 추가 ==========
+
+    /**
+     * 공지사항 댓글 신고 상세 조회
+     */
+    @GetMapping("/announcement-comments/{id}")
+    public ResponseEntity<ReportDto> getAnnouncementCommentReport(@PathVariable Long id) {
+        ReportDto report = reportService.getAnnouncementCommentReport(id);
         return ResponseEntity.ok(report);
     }
 
@@ -95,7 +122,7 @@ public class AdminReportController {
     }
 
     /**
-     * 댓글 신고 처리
+     * 댓글 신고 처리 (커뮤니티)
      */
     @PostMapping("/comments/{id}/process")
     public ResponseEntity<Void> processCommentReport(
@@ -104,6 +131,26 @@ public class AdminReportController {
             @AuthenticationPrincipal UserDetails userDetails) {
 
         reportActionService.processCommentReport(
+                id,
+                userDetails.getUsername(),
+                request
+        );
+
+        return ResponseEntity.ok().build();
+    }
+
+    // ========== 공지사항 댓글 신고 처리 추가 ==========
+
+    /**
+     * 공지사항 댓글 신고 처리
+     */
+    @PostMapping("/announcement-comments/{id}/process")
+    public ResponseEntity<Void> processAnnouncementCommentReport(
+            @PathVariable Long id,
+            @RequestBody ReportActionRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        reportActionService.processAnnouncementCommentReport(
                 id,
                 userDetails.getUsername(),
                 request

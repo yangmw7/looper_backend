@@ -17,12 +17,8 @@ public class CloudinaryService {
 
     private final Cloudinary cloudinary;
 
-    /**
-     * 이미지를 Cloudinary에 업로드하고 URL 반환
-     */
     public String uploadImage(MultipartFile file, String publicId) {
         try {
-            // public_id 접두어에 따라 폴더 동적 분기
             String folder;
             if (publicId.startsWith("post_")) {
                 folder = "looper-posts";
@@ -30,6 +26,8 @@ public class CloudinaryService {
                 folder = "looper-npcs";
             } else if (publicId.startsWith("skill_")) {
                 folder = "looper-skills";
+            } else if (publicId.startsWith("announcement_")) {
+                folder = "looper-announcements";
             } else {
                 folder = "looper-items";
             }

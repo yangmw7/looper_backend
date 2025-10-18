@@ -1,22 +1,18 @@
 package com.example.game_backend.controller.dto.mypage;
 
 import com.example.game_backend.repository.entity.report.*;
-
 import java.time.LocalDateTime;
 import java.util.Set;
 
-/**
- * 사용자가 자신이 신고한 내역 볼 때 사용
- */
 public record MyReportDto(
         Long id,
-        String reportType,           // POST or COMMENT
-        String category,             // 신고 유형 (한글)
-        String reason,               // 신고 사유 (한글)
+        String reportType,           // POST, COMMENT, ANNOUNCEMENT_COMMENT
+        String category,
+        String reason,
         String description,
-        String targetUser,           // 피신고자 닉네임
-        String status,               // pending, completed, rejected
-        String result,               // 처리 결과
+        String targetUser,
+        String status,
+        String result,
         LocalDateTime createdAt
 ) {
     public static MyReportDto fromPostReport(PostReport report) {
@@ -37,6 +33,21 @@ public record MyReportDto(
         return new MyReportDto(
                 report.getId(),
                 "COMMENT",
+                convertReasonsToCategory(report.getReasons()),
+                convertReasonsToString(report.getReasons()),
+                report.getDescription(),
+                report.getReported().getNickname(),
+                convertStatus(report.getStatus()),
+                report.getHandlerMemo(),
+                report.getCreatedAt()
+        );
+    }
+
+    // ========== 🆕 공지사항 댓글 신고 DTO 변환 추가 ==========
+    public static MyReportDto fromAnnouncementCommentReport(AnnouncementCommentReport report) {
+        return new MyReportDto(
+                report.getId(),
+                "ANNOUNCEMENT_COMMENT",
                 convertReasonsToCategory(report.getReasons()),
                 convertReasonsToString(report.getReasons()),
                 report.getDescription(),

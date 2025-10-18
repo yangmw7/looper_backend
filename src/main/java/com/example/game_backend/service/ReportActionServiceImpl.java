@@ -6,10 +6,10 @@ import com.example.game_backend.repository.PenaltyRepository;
 import com.example.game_backend.repository.entity.*;
 import com.example.game_backend.repository.entity.report.*;
 import com.example.game_backend.repository.report.*;
+import com.example.game_backend.repository.report.AnnouncementCommentReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 
 @Service
@@ -19,6 +19,7 @@ public class ReportActionServiceImpl implements ReportActionService {
 
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
+    private final AnnouncementCommentReportRepository announcementCommentReportRepository;
     private final PenaltyRepository penaltyRepository;
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
@@ -41,42 +42,39 @@ public class ReportActionServiceImpl implements ReportActionService {
         processReport(report, report.getReporter(), report.getReported(), adminUsername, req);
     }
 
+    // ========== 공지사항 댓글 신고 처리 ==========
+    @Override
+    public void processAnnouncementCommentReport(Long reportId, String adminUsername, ReportActionRequest req) {
+        AnnouncementCommentReport report = announcementCommentReportRepository.findById(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("신고 내역을 찾을 수 없습니다."));
+
+        processReport(report, report.getReporter(), report.getReported(), adminUsername, req);
+    }
+
     // ===== 공통 처리 로직 =====
     private void processReport(BaseReport report, Member reporter, Member reported,
                                String adminUsername, ReportActionRequest req) {
 
-        // 1. 신고 상태 업데이트
         report.setStatus(req.status());
         report.setHandledBy(adminUsername);
         report.setHandledAt(LocalDateTime.now());
         report.setHandlerMemo(req.handlerMemo());
 
-        // 2. 신고자에게 처리 완료 알림 (항상 발송)
         notificationService.sendReportProcessedNotification(reporter, report, req.status());
 
-        // 3. 제재 부과 필요 시 처리
         if ((req.status() == ReportStatus.ACTION_TAKEN || req.status() == ReportStatus.RESOLVED)
                 && req.penaltyType() != null) {
 
-            // 제재 생성
             Penalty penalty = createPenalty(reported, adminUsername, req);
-
-            // 피신고자 통계 업데이트
             updateReportedUserStats(reported, req.penaltyType());
-
-            // 피신고자에게 제재 알림
             notificationService.sendPenaltyNotification(reported, penalty);
         }
-
-        // 4. 기각(REJECTED)인 경우 피신고자에게는 알림 X
     }
 
-    // ===== 제재 생성 =====
     private Penalty createPenalty(Member member, String adminUsername, ReportActionRequest req) {
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime endDate = null;
 
-        // 정지 기간 계산
         if (req.penaltyType() == PenaltyType.SUSPENSION && req.suspensionDays() != null) {
             endDate = startDate.plusDays(req.suspensionDays());
         }
@@ -98,28 +96,20 @@ public class ReportActionServiceImpl implements ReportActionService {
         return penaltyRepository.save(penalty);
     }
 
-    // ===== 피신고자 통계 업데이트 =====
     private void updateReportedUserStats(Member member, PenaltyType penaltyType) {
-        // 신고 횟수 증가
         member.setReportCount(member.getReportCount() + 1);
 
-        // 제재 유형별 누적
         switch (penaltyType) {
             case WARNING -> member.setWarningCount(member.getWarningCount() + 1);
             case SUSPENSION -> member.setSuspensionCount(member.getSuspensionCount() + 1);
-            case PERMANENT -> member.setEnabled(false); // 영구정지는 계정 비활성화
+            case PERMANENT -> member.setEnabled(false);
         }
 
         memberRepository.save(member);
-
-        // 누적 제재 자동 강화 체크
         checkAutoEscalation(member);
     }
 
-    // ===== 누적 제재 자동 강화 =====
     private void checkAutoEscalation(Member member) {
-
-        // 경고 3회 누적 → 자동 3일 정지
         if (member.getWarningCount() >= 3 && member.getSuspensionCount() == 0) {
             Penalty autoSuspension = Penalty.builder()
                     .member(member)
@@ -140,7 +130,6 @@ public class ReportActionServiceImpl implements ReportActionService {
             notificationService.sendAutoEscalationNotification(member);
         }
 
-        // 정지 3회 누적 → 영구정지
         if (member.getSuspensionCount() >= 3) {
             Penalty autoPermanent = Penalty.builder()
                     .member(member)

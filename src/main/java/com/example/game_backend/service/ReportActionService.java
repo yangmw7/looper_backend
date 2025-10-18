@@ -16,4 +16,10 @@ public interface ReportActionService {
      * 댓글 신고 처리 (제재 포함)
      */
     void processCommentReport(Long reportId, String adminUsername, ReportActionRequest req);
+
+
+    /**
+     * 공지사항 댓글 신고 처리
+     */
+    void processAnnouncementCommentReport(Long reportId, String adminUsername, ReportActionRequest req);
 }

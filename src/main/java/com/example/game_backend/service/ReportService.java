@@ -20,4 +20,8 @@ public interface ReportService {
     Page<ReportDto> getCommentReports(Set<ReportStatus> statuses, Pageable pageable);
     ReportDto getPostReport(Long id);
     ReportDto getCommentReport(Long id);
+
+    Long createAnnouncementCommentReport(Long commentId, String reporterUsername, ReportCreateRequest req);
+    Page<ReportDto> getAnnouncementCommentReports(Set<ReportStatus> statuses, Pageable pageable);
+    ReportDto getAnnouncementCommentReport(Long id);
 }

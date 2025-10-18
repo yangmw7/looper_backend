@@ -5,10 +5,10 @@ import com.example.game_backend.repository.*;
 import com.example.game_backend.repository.PenaltyRepository;
 import com.example.game_backend.repository.entity.*;
 import com.example.game_backend.repository.report.*;
+import com.example.game_backend.repository.report.AnnouncementCommentReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,7 @@ public class MyPageReportServiceImpl implements MyPageReportService {
     private final PenaltyRepository penaltyRepository;
     private final PostReportRepository postReportRepository;
     private final CommentReportRepository commentReportRepository;
+    private final AnnouncementCommentReportRepository announcementCommentReportRepository;
     private final MemberRepository memberRepository;
     private final AppealRepository appealRepository;
     private final NotificationService notificationService;
@@ -46,16 +47,24 @@ public class MyPageReportServiceImpl implements MyPageReportService {
                 .collect(Collectors.toList());
     }
 
+    // ========== 🔄 getMyReports 수정 (공지사항 댓글 신고 포함) ==========
     @Override
     public List<MyReportDto> getMyReports(String username) {
         List<MyReportDto> result = new ArrayList<>();
 
+        // 1. 게시글 신고
         postReportRepository.findByReporter_UsernameOrderByCreatedAtDesc(username)
                 .forEach(report -> result.add(MyReportDto.fromPostReport(report)));
 
+        // 2. 커뮤니티 댓글 신고
         commentReportRepository.findByReporter_UsernameOrderByCreatedAtDesc(username)
                 .forEach(report -> result.add(MyReportDto.fromCommentReport(report)));
 
+        // 3. 🆕 공지사항 댓글 신고 추가
+        announcementCommentReportRepository.findByReporter_UsernameOrderByCreatedAtDesc(username)
+                .forEach(report -> result.add(MyReportDto.fromAnnouncementCommentReport(report)));
+
+        // 최신순 정렬
         result.sort((a, b) -> b.createdAt().compareTo(a.createdAt()));
 
         return result;
@@ -86,7 +95,6 @@ public class MyPageReportServiceImpl implements MyPageReportService {
             throw new IllegalArgumentException("이의신청 사유를 입력해주세요.");
         }
 
-        // Appeal 엔티티 생성
         Appeal appeal = Appeal.builder()
                 .penalty(penalty)
                 .appealReason(appealReason.trim())
@@ -95,12 +103,10 @@ public class MyPageReportServiceImpl implements MyPageReportService {
 
         appealRepository.save(appeal);
 
-        // Penalty 상태 업데이트
         penalty.setAppealSubmitted(true);
         penalty.setCanAppeal(false);
         penaltyRepository.save(penalty);
 
-        // 알림 발송
         notificationService.sendAppealReceivedNotification(member);
     }
 
