@@ -12,6 +12,7 @@ public class AnnouncementRequest {
     private String title;
     private String content;
     private AnnouncementCategory category;
+    private Boolean isPinned;
     private List<String> keepImageUrls;
     private MultipartFile[] imageFiles;
 }

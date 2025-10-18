@@ -10,8 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface AnnouncementService {
     Long save(AnnouncementRequest request, Member writer);
-    void updateAnnouncement(Long id, AnnouncementRequest request);
-    void deleteAnnouncement(Long id);
+    void updateAnnouncement(Long id, AnnouncementRequest request, String editorUsername);
+    void deleteAnnouncement(Long id, String deleterUsername);
     String storeFileAndGetUrl(MultipartFile file);
     Page<AnnouncementResponse> getAll(AnnouncementCategory category, Pageable pageable);
     AnnouncementResponse getOne(Long id);

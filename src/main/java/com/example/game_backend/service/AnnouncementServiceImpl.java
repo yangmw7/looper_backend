@@ -5,6 +5,7 @@ import com.example.game_backend.controller.dto.announcement.AnnouncementResponse
 import com.example.game_backend.repository.*;
 import com.example.game_backend.repository.entity.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AnnouncementServiceImpl implements AnnouncementService {
@@ -24,11 +26,32 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final MemberRepository memberRepository;
     private final CloudinaryService cloudinaryService;
 
-    private static final int MAX_PINNED = 3; // 최대 핀 개수
+    private static final int MAX_PINNED = 3;
 
     @Override
     @Transactional
     public Long save(AnnouncementRequest request, Member writer) {
+        log.info("[공지사항 작성] 제목: {}, 작성자: {}", request.getTitle(), writer.getUsername());
+
+        Boolean isPinned = request.getIsPinned() != null ? request.getIsPinned() : false;
+        LocalDateTime pinnedAt = null;
+
+        if (isPinned) {
+            long currentPinnedCount = announcementRepository.countByIsPinnedTrue();
+
+            if (currentPinnedCount >= MAX_PINNED) {
+                Announcement oldestPinned = announcementRepository.findFirstByIsPinnedTrueOrderByPinnedAtAsc();
+                if (oldestPinned != null) {
+                    oldestPinned.setIsPinned(false);
+                    oldestPinned.setPinnedAt(null);
+                    announcementRepository.save(oldestPinned);
+                    log.info("가장 오래된 핀 자동 해제 - ID: {}", oldestPinned.getId());
+                }
+            }
+
+            pinnedAt = LocalDateTime.now();
+        }
+
         Announcement announcement = Announcement.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -36,6 +59,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .writer(writer)
                 .viewCount(0)
                 .likeCount(0)
+                .isPinned(isPinned)
+                .pinnedAt(pinnedAt)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -59,14 +84,48 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             }
         }
 
-        return announcementRepository.save(announcement).getId();
+        Long savedId = announcementRepository.save(announcement).getId();
+        log.info("공지사항 작성 완료 - ID: {}, 핀 설정: {}", savedId, isPinned);
+        return savedId;
     }
 
     @Override
     @Transactional
-    public void updateAnnouncement(Long id, AnnouncementRequest request) {
+    public void updateAnnouncement(Long id, AnnouncementRequest request, String editorUsername) {
         Announcement announcement = announcementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("공지사항 없음"));
+
+        log.info("[공지사항 수정] ID: {}, 제목: {}, 원작성자: {}, 수정자: {}",
+                id,
+                announcement.getTitle(),
+                announcement.getWriter().getUsername(),
+                editorUsername
+        );
+
+        Boolean newIsPinned = request.getIsPinned() != null ? request.getIsPinned() : false;
+        Boolean oldIsPinned = announcement.getIsPinned();
+
+        if (newIsPinned && !oldIsPinned) {
+            long currentPinnedCount = announcementRepository.countByIsPinnedTrue();
+
+            if (currentPinnedCount >= MAX_PINNED) {
+                Announcement oldestPinned = announcementRepository.findFirstByIsPinnedTrueOrderByPinnedAtAsc();
+                if (oldestPinned != null && !oldestPinned.getId().equals(id)) {
+                    oldestPinned.setIsPinned(false);
+                    oldestPinned.setPinnedAt(null);
+                    announcementRepository.save(oldestPinned);
+                    log.info("가장 오래된 핀 자동 해제 - ID: {}", oldestPinned.getId());
+                }
+            }
+
+            announcement.setIsPinned(true);
+            announcement.setPinnedAt(LocalDateTime.now());
+            log.info("핀 설정 - ID: {}", id);
+        } else if (!newIsPinned && oldIsPinned) {
+            announcement.setIsPinned(false);
+            announcement.setPinnedAt(null);
+            log.info("핀 해제 - ID: {}", id);
+        }
 
         announcement.setTitle(request.getTitle());
         announcement.setContent(request.getContent());
@@ -99,13 +158,22 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 }
             }
         }
+
+        log.info("공지사항 수정 완료 - ID: {}", id);
     }
 
     @Override
     @Transactional
-    public void deleteAnnouncement(Long id) {
+    public void deleteAnnouncement(Long id, String deleterUsername) {
         Announcement announcement = announcementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("공지사항 없음"));
+
+        log.warn("[공지사항 삭제] ID: {}, 제목: {}, 원작성자: {}, 삭제자: {}",
+                id,
+                announcement.getTitle(),
+                announcement.getWriter().getUsername(),
+                deleterUsername
+        );
 
         if (announcement.getImages() != null) {
             for (AnnouncementImage image : announcement.getImages()) {
@@ -114,6 +182,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
 
         announcementRepository.deleteById(id);
+        log.info("공지사항 삭제 완료 - ID: {}", id);
     }
 
     @Override
@@ -170,9 +239,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         announcementRepository.save(announcement);
     }
 
-    /**
-     * 핀 토글 (최대 3개, FIFO)
-     */
     @Override
     @Transactional
     public void togglePin(Long announcementId) {
@@ -180,32 +246,30 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .orElseThrow(() -> new RuntimeException("공지사항 없음"));
 
         if (announcement.getIsPinned()) {
-            // 핀 해제
             announcement.setIsPinned(false);
             announcement.setPinnedAt(null);
+            log.info("핀 해제 - ID: {}", announcementId);
         } else {
-            // 핀 설정
             long currentPinnedCount = announcementRepository.countByIsPinnedTrue();
 
             if (currentPinnedCount >= MAX_PINNED) {
-                // 3개 이상이면 가장 오래된 핀 해제 (FIFO)
                 Announcement oldestPinned = announcementRepository.findFirstByIsPinnedTrueOrderByPinnedAtAsc();
                 if (oldestPinned != null) {
                     oldestPinned.setIsPinned(false);
                     oldestPinned.setPinnedAt(null);
                     announcementRepository.save(oldestPinned);
+                    log.info("가장 오래된 핀 자동 해제 - ID: {}", oldestPinned.getId());
                 }
             }
 
-            // 새로운 공지 핀 설정
             announcement.setIsPinned(true);
             announcement.setPinnedAt(LocalDateTime.now());
+            log.info("핀 설정 - ID: {}", announcementId);
         }
 
         announcementRepository.save(announcement);
     }
 
-    // ========== DTO 변환 ==========
     private AnnouncementResponse toResponse(Announcement a) {
         List<String> urls = a.getImages().stream()
                 .map(AnnouncementImage::getFilePath)
