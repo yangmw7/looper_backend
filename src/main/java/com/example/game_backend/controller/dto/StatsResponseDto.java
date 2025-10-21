@@ -19,6 +19,9 @@ public class StatsResponseDto {
     private Float crid;
     private Float spd;
     private Float jmp;
+    private Float ats;
+    private Integer jcnt;
+    private String skills;
 
     private Integer clear;
     private Integer chapter;
@@ -38,6 +41,9 @@ public class StatsResponseDto {
                 .crid(stats.getCrid())
                 .spd(stats.getSpd())
                 .jmp(stats.getJmp())
+                .ats(stats.getAts())
+                .jcnt(stats.getJcnt())
+                .skills(stats.getSkills())
                 .clear(stats.getClear())
                 .chapter(stats.getChapter())
                 .stage(stats.getStage())

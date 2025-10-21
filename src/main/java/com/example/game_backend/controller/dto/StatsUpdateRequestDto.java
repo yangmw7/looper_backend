@@ -21,6 +21,9 @@ public class StatsUpdateRequestDto {
     private Float crid;
     private Float spd;
     private Float jmp;
+    private Float ats;
+    private Integer jcnt;
+    private String Skills;
 
     // 진행도 정보
     private Integer clear;

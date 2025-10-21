@@ -1,4 +1,3 @@
-// src/main/java/com/example/game_backend/repository/entity/PlayerStats.java
 package com.example.game_backend.repository.entity;
 
 import jakarta.persistence.*;
@@ -25,31 +24,42 @@ public class PlayerStats {
     // 스탯 정보
     @Column
     @Builder.Default
-    private Float hp = 100.0f;
+    private Float hp = 0.0f;
 
     @Column
     @Builder.Default
-    private Float atk = 10.0f;
+    private Float atk = 0.0f;
 
     @Column
     @Builder.Default
-    private Float def = 5.0f;
+    private Float def = 0.0f;
 
     @Column
     @Builder.Default
-    private Float cri = 0.05f;  // 크리티컬 확률
+    private Float cri = 0.0f;  // 크리티컬 확률
 
     @Column
     @Builder.Default
-    private Float crid = 1.5f;  // 크리티컬 데미지
+    private Float crid = 0.0f;  // 크리티컬 데미지
 
     @Column
     @Builder.Default
-    private Float spd = 5.0f;
+    private Float spd = 0.0f;
 
     @Column
     @Builder.Default
-    private Float jmp = 10.0f;
+    private Float jmp = 0.0f;
+
+    @Column
+    @Builder.Default
+    private Float ats = 0.0f;
+
+    @Column
+    @Builder.Default
+    private Integer jcnt = 0;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String skills;
 
     // 진행도 정보
     @Column
