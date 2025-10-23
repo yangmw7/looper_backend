@@ -1,9 +1,9 @@
 package com.example.game_backend.repository;
 
+import com.example.game_backend.repository.entity.Member;
 import com.example.game_backend.repository.entity.PlayerStats;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 
 @Repository
@@ -12,6 +12,7 @@ public interface PlayerStatsRepository extends JpaRepository<PlayerStats, Long> 
     // Member ID로 PlayerStats 조회
     Optional<PlayerStats> findByMemberId(Long memberId);
 
+    Optional<PlayerStats> findByMember(Member member);
     // Member ID로 존재 여부 확인
     boolean existsByMemberId(Long memberId);
 

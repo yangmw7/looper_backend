@@ -32,4 +32,21 @@ public class ChatController {
         log.info("챗봇 응답 전송 완료");
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> healthCheck() {
+        boolean isHealthy = mcpService.isServiceHealthy();
+
+        Map<String, Object> response = Map.of(
+                "status", isHealthy ? "UP" : "DOWN",
+                "mcpService", isHealthy ? "connected" : "disconnected",
+                "timestamp", System.currentTimeMillis()
+        );
+
+        if (isHealthy) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(503).body(response);
+        }
+    }
+
 }

@@ -32,6 +32,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/api/**")  // 모든 API에 적용
                 .excludePathPatterns(
                         "/api/auth/**",           // 인증 관련 제외
+                        "/api/chatbot/**",        // 챗봇 API 제외 (모든 사용자 접근 가능)
                         "/api/mypage/**",         // 마이페이지는 제외 (제재 확인용)
                         "/api/notifications/**"   // 알림도 제외 (제재 알림 받아야 함)
                 );
