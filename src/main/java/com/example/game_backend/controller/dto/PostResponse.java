@@ -1,4 +1,3 @@
-// src/main/java/com/example/game_backend/controller/dto/PostResponse.java
 package com.example.game_backend.controller.dto;
 
 import lombok.Builder;
@@ -15,10 +14,12 @@ public class PostResponse {
     private String content;
     private String writer;
     private int viewCount;
+
+    // 좋아요 수
+    private int likeCount;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> imageUrls;
-
-    // ↓ 댓글 수 필드 추가
     private long commentCount;
 }

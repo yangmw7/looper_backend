@@ -1,5 +1,6 @@
 package com.example.game_backend.api;
 
+import com.example.game_backend.config.JwtUtil;
 import com.example.game_backend.controller.dto.CommentRequest;
 import com.example.game_backend.controller.dto.CommentResponse;
 import com.example.game_backend.repository.entity.Comment;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,34 +24,39 @@ import java.util.List;
 public class CommentController {
 
     private final CommentService commentService;
+    private final JwtUtil jwtUtil;
     private static final Logger log = LoggerFactory.getLogger(CommentController.class);
 
-    // ── 댓글 작성 ──
+    // ── 댓글 작성 (대댓글 포함) ──
     @PostMapping("/{postId}/comments")
     public ResponseEntity<?> writeComment(
             @PathVariable Long postId,
             @RequestBody CommentRequest commentRequest) {
 
-        log.info("📨 댓글 작성 요청: postId={}, content={}", postId, commentRequest.getContent());
+        log.info("📨 댓글 작성 요청: postId={}, content={}, parentCommentId={}",
+                postId, commentRequest.getContent(), commentRequest.getParentCommentId());
+
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         log.info("🔐 JWT에서 추출된 username = {}", username);
 
         Comment savedComment = commentService.saveComment(postId, commentRequest);
         log.info("✅ 저장된 댓글 ID: {}", savedComment.getId());
 
-        // 저장된 Comment 엔티티를 CommentResponse DTO로 변환해서 반환
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         CommentResponse responseDto = CommentResponse.builder()
                 .id(savedComment.getId())
                 .content(savedComment.getContent())
                 .writerNickname(savedComment.getNickname())
+                .likeCount(savedComment.getLikeCount())
                 .createdAt(savedComment.getCreatedAt().format(formatter))
+                .parentCommentId(savedComment.getParentComment() != null ?
+                        savedComment.getParentComment().getId() : null)
                 .build();
 
         return ResponseEntity.ok(responseDto);
     }
 
-    // ── 댓글 목록 조회 ──
+    // ── 댓글 목록 조회 (대댓글 포함) ──
     @GetMapping("/{postId}/comments")
     public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Long postId) {
         log.info("🔍 댓글 목록 조회 요청: postId={}", postId);
@@ -68,17 +75,18 @@ public class CommentController {
         log.info("✏️ 댓글 수정 요청: postId={}, commentId={}, newContent={}",
                 postId, commentId, commentRequest.getContent());
 
-        // 1) 서비스 계층에서 작성자 검사 후 실제 댓글 수정
         Comment updated = commentService.updateComment(commentId, commentRequest);
         log.info("✅ 수정된 댓글 ID: {}", updated.getId());
 
-        // 2) 수정된 Comment 엔티티를 CommentResponse DTO로 변환
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         CommentResponse responseDto = CommentResponse.builder()
                 .id(updated.getId())
                 .content(updated.getContent())
                 .writerNickname(updated.getNickname())
+                .likeCount(updated.getLikeCount())
                 .createdAt(updated.getCreatedAt().format(formatter))
+                .parentCommentId(updated.getParentComment() != null ?
+                        updated.getParentComment().getId() : null)
                 .build();
 
         return ResponseEntity.ok(responseDto);
@@ -106,5 +114,26 @@ public class CommentController {
             log.error("❌ 삭제 실패: {}", ex.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    // ⭐ 댓글 좋아요 토글 (Service만 호출)
+    @PostMapping("/{postId}/comments/{commentId}/like")
+    public ResponseEntity<Map<String, Object>> toggleCommentLike(
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(token);
+
+        log.info("❤️ 댓글 좋아요 토글: commentId={}, user={}", commentId, username);
+
+        // ✅ Service에서 상태를 받아옴
+        Map<String, Object> response = commentService.toggleLikeAndGetStatus(commentId, username);
+
+        log.info("✅ 댓글 좋아요 결과: isLiked={}, likeCount={}",
+                response.get("isLiked"), response.get("likeCount"));
+
+        return ResponseEntity.ok(response);
     }
 }

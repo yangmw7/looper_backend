@@ -8,9 +8,9 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
-@Getter @Setter
+@Getter
+@Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseReport {
@@ -28,13 +28,6 @@ public abstract class BaseReport {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "reported_id")
     protected Member reported;
-
-    // 신고 사유들 (복수 선택 가능)
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "report_reasons", joinColumns = @JoinColumn(name = "report_id"))
-    @Enumerated(EnumType.STRING)
-    @Column(name = "reason", nullable = false, length = 40)
-    protected Set<ReasonCode> reasons;
 
     // 상세 설명
     @Size(max = 500)

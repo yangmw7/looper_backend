@@ -28,12 +28,15 @@ public class Post {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    /** 작성자(Member와 매핑) */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id", nullable = false)
     private Member writer;
 
     private int viewCount;
+
+    // 좋아요 수
+    @Builder.Default
+    private int likeCount = 0;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -41,13 +44,16 @@ public class Post {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    /** 이미지 매핑 유지 */
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
-    /** 댓글 매핑 추가 */
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
+
+    // 게시글 좋아요 관계
+    @Builder.Default
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostLike> likes = new ArrayList<>();
 }

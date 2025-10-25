@@ -15,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -43,7 +45,6 @@ public class PostController {
         return ResponseEntity.ok(id);
     }
 
-    // 게시글 목록 조회
     @GetMapping
     public ResponseEntity<List<PostResponse>> getAll() {
         List<PostResponse> list = postRepository.findAll().stream()
@@ -58,6 +59,7 @@ public class PostController {
                             .content(post.getContent())
                             .writer(post.getWriter().getNickname())
                             .viewCount(post.getViewCount())
+                            .likeCount(post.getLikeCount())
                             .createdAt(post.getCreatedAt())
                             .updatedAt(post.getUpdatedAt())
                             .imageUrls(urls)
@@ -68,7 +70,6 @@ public class PostController {
         return ResponseEntity.ok(list);
     }
 
-    // 게시글 단건 조회
     @GetMapping("/{id}")
     public ResponseEntity<PostResponse> getOne(@PathVariable Long id) {
         Post post = postRepository.findById(id)
@@ -88,6 +89,7 @@ public class PostController {
                 .content(post.getContent())
                 .writer(post.getWriter().getNickname())
                 .viewCount(post.getViewCount())
+                .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .imageUrls(urls)
@@ -114,9 +116,7 @@ public class PostController {
             return ResponseEntity.status(403).build();
         }
 
-        // 변경: postService.deletePost 호출 (Cloudinary 이미지도 함께 삭제)
         postService.deletePost(id);
-
         return ResponseEntity.noContent().build();
     }
 
@@ -130,7 +130,6 @@ public class PostController {
             @RequestPart(value = "imageFiles", required = false) MultipartFile[] imageFiles,
             @RequestHeader("Authorization") String authHeader
     ) {
-        // 본인 확인
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.extractUsername(token);
         Member member = memberRepository.findByUsername(username)
@@ -139,7 +138,6 @@ public class PostController {
         Post existing = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("게시글 없음"));
 
-        // ✅ 수정: ID로 비교
         if (!existing.getWriter().getId().equals(member.getId())) {
             return ResponseEntity.status(403).body("권한 없음");
         }
@@ -152,5 +150,55 @@ public class PostController {
 
         postService.updatePost(id, req);
         return ResponseEntity.ok("수정 완료");
+    }
+
+    // ⭐ 게시글 좋아요 토글 (Service만 호출)
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Map<String, Object>> togglePostLike(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(token);
+
+        // ✅ Service에서 상태를 받아옴
+        Map<String, Object> response = postService.toggleLikeAndGetStatus(id, username);
+        return ResponseEntity.ok(response);
+    }
+
+    // ⭐ 게시글 좋아요 상태 조회 (Service만 호출)
+    @GetMapping("/{id}/like/status")
+    public ResponseEntity<Map<String, Object>> getPostLikeStatus(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(token);
+
+        // ✅ Service에서 상태를 받아옴
+        boolean isLiked = postService.isPostLikedByUser(id, username);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("isLiked", isLiked);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // ⭐ 댓글 좋아요 상태 조회 (Service만 호출)
+    @GetMapping("/{id}/comments/likes/status")
+    public ResponseEntity<Map<String, Object>> getCommentLikesStatus(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(token);
+
+        // ✅ Service에서 상태를 받아옴
+        List<Long> likedCommentIds = postService.getLikedCommentIds(id, username);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("likedCommentIds", likedCommentIds);
+
+        return ResponseEntity.ok(response);
     }
 }

@@ -6,6 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CommentRequest {
-    private Long MemberId;     // 어느 게시글에 다는 댓글인지
-    private String content;     // 댓글 내용
+    private String content;
+
+    // 대댓글 작성 시 부모 댓글 ID
+    private Long parentCommentId;
 }
