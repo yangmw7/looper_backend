@@ -8,4 +8,5 @@ public interface AuthService {
     AuthResponse login(LoginRequest request);
     AuthResponse refresh(TokenRefreshRequest request);
     void logout(String username);
+    void deleteAccount(String username, String password);
 }

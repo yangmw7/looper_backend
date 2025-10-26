@@ -136,4 +136,18 @@ public class CommentController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/my-comments")
+    public ResponseEntity<List<CommentResponse>> getMyComments(
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(token);
+
+        log.info("내가 쓴 댓글 조회: user={}", username);
+
+        List<CommentResponse> myComments = commentService.getCommentsByUsername(username);
+
+        return ResponseEntity.ok(myComments);
+    }
 }

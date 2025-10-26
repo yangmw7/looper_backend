@@ -1,6 +1,7 @@
 package com.example.game_backend.service;
 
 import com.example.game_backend.controller.dto.PostRequest;
+import com.example.game_backend.controller.dto.PostResponse;
 import com.example.game_backend.repository.CommentLikeRepository;
 import com.example.game_backend.repository.MemberRepository;
 import com.example.game_backend.repository.PostLikeRepository;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -123,7 +125,6 @@ public class PostServiceImpl implements PostService {
         return cloudinaryService.uploadImage(file, uniqueId);
     }
 
-    // 게시글 좋아요 토글 (기존)
     @Override
     @Transactional
     public void toggleLike(Long postId, String username) {
@@ -150,7 +151,6 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post);
     }
 
-    // ⭐ 게시글 좋아요 토글 + 상태 반환 (신규)
     @Override
     @Transactional
     public Map<String, Object> toggleLikeAndGetStatus(Long postId, String username) {
@@ -176,7 +176,6 @@ public class PostServiceImpl implements PostService {
 
         postRepository.save(post);
 
-        // 최종 상태 조회
         boolean isLiked = postLikeRepository.existsByPostAndMember(post, member);
 
         Map<String, Object> result = new HashMap<>();
@@ -186,7 +185,6 @@ public class PostServiceImpl implements PostService {
         return result;
     }
 
-    // ⭐ 게시글 좋아요 상태 조회 (신규)
     @Override
     @Transactional(readOnly = true)
     public boolean isPostLikedByUser(Long postId, String username) {
@@ -199,7 +197,6 @@ public class PostServiceImpl implements PostService {
         return postLikeRepository.existsByPostAndMember(post, member);
     }
 
-    // ⭐ 댓글 좋아요 상태 조회 (신규)
     @Override
     @Transactional(readOnly = true)
     public List<Long> getLikedCommentIds(Long postId, String username) {
@@ -207,5 +204,35 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new IllegalArgumentException("회원 없음"));
 
         return commentLikeRepository.findLikedCommentIdsByPostAndMember(postId, member.getId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostResponse> getMyPosts(String username) {
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("회원 없음"));
+
+        List<Post> posts = postRepository.findAllByWriterOrderByCreatedAtDesc(member);
+
+        return posts.stream()
+                .map(post -> {
+                    List<String> urls = post.getImages().stream()
+                            .map(Image::getFilePath)
+                            .collect(Collectors.toList());
+                    long commentCount = post.getComments().size();
+                    return PostResponse.builder()
+                            .id(post.getId())
+                            .title(post.getTitle())
+                            .content(post.getContent())
+                            .writer(post.getWriter().getNickname())
+                            .viewCount(post.getViewCount())
+                            .likeCount(post.getLikeCount())
+                            .createdAt(post.getCreatedAt())
+                            .updatedAt(post.getUpdatedAt())
+                            .imageUrls(urls)
+                            .commentCount(commentCount)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }

@@ -12,7 +12,7 @@ import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;  // 추가
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,9 +26,8 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // 로그인
     @Override
-    @Transactional   // ← delete + save가 하나의 트랜잭션으로 실행되도록 보장
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         Member member = memberRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -40,7 +39,6 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtUtil.generateAccessToken(member);
         String refreshToken = jwtUtil.generateRefreshToken(member);
 
-        // 기존 RefreshToken 삭제 후 새로 저장
         refreshTokenRepository.deleteByUsername(member.getUsername());
         refreshTokenRepository.save(
                 RefreshToken.builder()
@@ -58,7 +56,6 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    // 토큰 재발급
     @Override
     @Transactional
     public AuthResponse refresh(TokenRefreshRequest request) {
@@ -76,11 +73,9 @@ public class AuthServiceImpl implements AuthService {
         Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 새 토큰들 발급
         String newAccessToken = jwtUtil.generateAccessToken(member);
         String newRefreshToken = jwtUtil.generateRefreshToken(member);
 
-        // 기존 Refresh Token 삭제 후 새로 저장
         refreshTokenRepository.deleteByUsername(username);
         refreshTokenRepository.save(
                 RefreshToken.builder()
@@ -92,17 +87,30 @@ public class AuthServiceImpl implements AuthService {
 
         return new AuthResponse(
                 newAccessToken,
-                newRefreshToken,   // 새 refresh 반환
+                newRefreshToken,
                 member.getNickname(),
                 List.of(member.getRole().name())
         );
     }
 
-
-    // 로그아웃
     @Override
     @Transactional
     public void logout(String username) {
         refreshTokenRepository.deleteByUsername(username);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAccount(String username, String password) {
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다"));
+
+        if (!passwordEncoder.matches(password, member.getPassword())) {
+            throw new RuntimeException("비밀번호가 일치하지 않습니다");
+        }
+
+        refreshTokenRepository.deleteByUsername(username);
+
+        memberRepository.delete(member);
     }
 }

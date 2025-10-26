@@ -201,4 +201,16 @@ public class PostController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/my-posts")
+    public ResponseEntity<List<PostResponse>> getMyPosts(
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.extractUsername(token);
+
+        List<PostResponse> myPosts = postService.getMyPosts(username);
+
+        return ResponseEntity.ok(myPosts);
+    }
 }

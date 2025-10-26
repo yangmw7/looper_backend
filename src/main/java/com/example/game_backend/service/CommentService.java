@@ -12,10 +12,7 @@ public interface CommentService {
     List<CommentResponse> getCommentsByPostId(Long postId);
     Comment updateComment(Long commentId, CommentRequest commentRequest);
     void deleteComment(Long commentId);
-
-    // 댓글 좋아요
     void toggleLike(Long commentId, String username);
-
-    // ⭐ 신규 추가: 댓글 좋아요 토글 후 상태 반환
     Map<String, Object> toggleLikeAndGetStatus(Long commentId, String username);
+    List<CommentResponse> getCommentsByUsername(String username);
 }

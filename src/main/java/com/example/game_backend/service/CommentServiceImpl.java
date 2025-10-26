@@ -50,7 +50,6 @@ public class CommentServiceImpl implements CommentService {
                 .content(commentRequest.getContent())
                 .build();
 
-        // 대댓글 처리
         if (commentRequest.getParentCommentId() != null) {
             Comment parent = commentRepository.findById(commentRequest.getParentCommentId())
                     .orElseThrow(() -> new IllegalArgumentException("부모 댓글 없음"));
@@ -68,7 +67,6 @@ public class CommentServiceImpl implements CommentService {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        // 최상위 댓글만 조회 (대댓글 제외)
         return commentRepository
                 .findAllByPostAndParentCommentIsNullOrderByCreatedAtDesc(post)
                 .stream()
@@ -113,7 +111,6 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.delete(comment);
     }
 
-    // 좋아요 토글 기능 (기존)
     @Override
     @Transactional
     public void toggleLike(Long commentId, String username) {
@@ -140,7 +137,6 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.save(comment);
     }
 
-    // ⭐ 좋아요 토글 + 상태 반환 (신규)
     @Override
     @Transactional
     public Map<String, Object> toggleLikeAndGetStatus(Long commentId, String username) {
@@ -166,7 +162,6 @@ public class CommentServiceImpl implements CommentService {
 
         commentRepository.save(comment);
 
-        // 최종 상태 조회
         boolean isLiked = commentLikeRepository.existsByCommentAndMember(comment, member);
 
         Map<String, Object> result = new HashMap<>();
@@ -176,7 +171,29 @@ public class CommentServiceImpl implements CommentService {
         return result;
     }
 
-    // 대댓글 포함한 DTO 변환
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getCommentsByUsername(String username) {
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("회원 없음"));
+
+        List<Comment> comments = commentRepository.findAllByMemberOrderByCreatedAtDesc(member);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        return comments.stream()
+                .map(comment -> CommentResponse.builder()
+                        .id(comment.getId())
+                        .content(comment.getContent())
+                        .writerNickname(comment.getNickname())
+                        .likeCount(comment.getLikeCount())
+                        .createdAt(comment.getCreatedAt().format(formatter))
+                        .postId(comment.getPost().getId())
+                        .postTitle(comment.getPost().getTitle())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     private CommentResponse toResponse(Comment c, DateTimeFormatter formatter) {
         List<CommentResponse> replies = c.getReplies().stream()
                 .map(reply -> toResponse(reply, formatter))
