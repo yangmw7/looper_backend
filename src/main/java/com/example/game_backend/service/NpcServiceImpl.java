@@ -22,6 +22,23 @@ public class NpcServiceImpl implements NpcService {
     private final NpcRepository npcRepository;
     private final CloudinaryService cloudinaryService;
 
+    // List<String>에서 한글만 추출해서 List<String>으로 반환
+    private List<String> extractKoreanAsList(List<String> list) {
+        if (list == null || list.isEmpty()) {
+            return List.of();
+        }
+
+        // 배열의 두 번째 요소(index 1)가 한글
+        if (list.size() > 1) {
+            return List.of(list.get(1)); // 한글만 List로 반환
+        }
+
+        // 한글이 포함된 문자열만 필터링
+        return list.stream()
+                .filter(s -> s != null && s.matches(".*[가-힣].*"))
+                .toList();
+    }
+
     @Override
     public List<NpcResponse> getAllNpcs() {
         return npcRepository.findAll().stream()
@@ -116,15 +133,16 @@ public class NpcServiceImpl implements NpcService {
         });
     }
 
+    // ⭐ List<String>에서 한글만 추출해서 List<String>으로 반환
     private NpcResponse toResponse(Npc npc) {
         return new NpcResponse(
                 npc.getId(),
-                npc.getName(),
+                extractKoreanAsList(npc.getName()),
                 npc.getHp(),
                 npc.getAtk(),
                 npc.getDef(),
                 npc.getSpd(),
-                npc.getFeatures(),
+                extractKoreanAsList(npc.getFeatures()),
                 npc.getImageUrl()
         );
     }

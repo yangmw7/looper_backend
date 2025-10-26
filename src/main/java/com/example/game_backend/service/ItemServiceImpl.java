@@ -20,17 +20,38 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
-    private final CloudinaryService cloudinaryService; // GoogleDriveService에서 변경
+    private final CloudinaryService cloudinaryService;
 
-    // 엔티티 → Response DTO 변환
+    // 한글만 필터링하는 헬퍼 메서드
+    private List<String> filterKoreanOnly(List<ItemName> names) {
+        return names.stream()
+                .filter(name -> containsKorean(name.getValue()))
+                .map(ItemName::getValue)
+                .toList();
+    }
+
+    private List<String> filterKoreanDescriptions(List<ItemDescription> descriptions) {
+        return descriptions.stream()
+                .filter(desc -> containsKorean(desc.getValue()))
+                .map(ItemDescription::getValue)
+                .toList();
+    }
+
+    // 한글 포함 여부 확인
+    private boolean containsKorean(String text) {
+        if (text == null) return false;
+        return text.matches(".*[가-힣].*");
+    }
+
+    // 엔티티 → Response DTO 변환 (⭐ 한글만 필터링)
     private ItemResponse toResponse(Item item) {
         return new ItemResponse(
                 item.getId(),
                 item.getRarity(),
                 item.isTwoHander(),
                 item.isStackable(),
-                item.getNames().stream().map(ItemName::getValue).toList(),
-                item.getDescriptions().stream().map(ItemDescription::getValue).toList(),
+                filterKoreanOnly(item.getNames()), // ⭐ 한글만 필터링
+                filterKoreanDescriptions(item.getDescriptions()), // ⭐ 한글만 필터링
                 item.getSkills().stream().map(ItemSkill::getSkillId).toList(),
                 item.getAttributes().stream()
                         .map(a -> new ItemResponse.AttributeDto(a.getStat(), a.getOp(), a.getValue()))
