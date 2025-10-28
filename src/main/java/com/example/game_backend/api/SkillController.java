@@ -26,7 +26,7 @@ public class SkillController {
     private final SkillService skillService;
     private final ObjectMapper objectMapper;
 
-    // ========== 모든 사용자 접근 가능 ==========
+    // ========== 모든 사용자 접근 가능 (GameGuide용) ==========
     @GetMapping
     public List<SkillResponse> getAllSkills() {
         return skillService.getAllSkills();
@@ -35,6 +35,15 @@ public class SkillController {
     @GetMapping("/{id}")
     public ResponseEntity<SkillResponse> getSkill(@PathVariable String id) {
         SkillResponse skill = skillService.getSkill(id);
+        if (skill == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(skill);
+    }
+
+    // ========== Admin용 상세 조회 (전체 데이터) ==========
+    @GetMapping("/{id}/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SkillResponse> getSkillForAdmin(@PathVariable String id) {
+        SkillResponse skill = skillService.getSkillFull(id);
         if (skill == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(skill);
     }

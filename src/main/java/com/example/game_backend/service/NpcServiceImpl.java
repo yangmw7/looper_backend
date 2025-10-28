@@ -53,6 +53,14 @@ public class NpcServiceImpl implements NpcService {
                 .orElse(null);
     }
 
+    // ⭐ Admin용 - 전체 데이터 반환
+    @Override
+    public NpcResponse getNpcFull(String id) {
+        return npcRepository.findById(id)
+                .map(this::toResponseFull)
+                .orElse(null);
+    }
+
     @Override
     @Transactional
     public NpcResponse createNpc(NpcRequest request, MultipartFile imageFile) {
@@ -82,7 +90,7 @@ public class NpcServiceImpl implements NpcService {
         npc.setImageUrl(request.getImageUrl());
 
         npcRepository.save(npc);
-        return toResponse(npc);
+        return toResponseFull(npc); // ⭐ Admin용이므로 Full 반환
     }
 
     @Override
@@ -117,7 +125,7 @@ public class NpcServiceImpl implements NpcService {
         }
 
         npcRepository.save(npc);
-        return toResponse(npc);
+        return toResponseFull(npc); // ⭐ Admin용이므로 Full 반환
     }
 
     @Override
@@ -133,7 +141,7 @@ public class NpcServiceImpl implements NpcService {
         });
     }
 
-    // ⭐ List<String>에서 한글만 추출해서 List<String>으로 반환
+    // ⭐ 한글만 반환 (GameGuide용)
     private NpcResponse toResponse(Npc npc) {
         return new NpcResponse(
                 npc.getId(),
@@ -143,6 +151,20 @@ public class NpcServiceImpl implements NpcService {
                 npc.getDef(),
                 npc.getSpd(),
                 extractKoreanAsList(npc.getFeatures()),
+                npc.getImageUrl()
+        );
+    }
+
+    // ⭐ 전체 데이터 반환 (Admin용)
+    private NpcResponse toResponseFull(Npc npc) {
+        return new NpcResponse(
+                npc.getId(),
+                npc.getName(), // 영문/한글 모두 포함
+                npc.getHp(),
+                npc.getAtk(),
+                npc.getDef(),
+                npc.getSpd(),
+                npc.getFeatures(), // 전체 features 포함
                 npc.getImageUrl()
         );
     }

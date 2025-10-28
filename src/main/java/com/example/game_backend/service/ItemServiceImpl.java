@@ -43,7 +43,7 @@ public class ItemServiceImpl implements ItemService {
         return text.matches(".*[가-힣].*");
     }
 
-    // 엔티티 → Response DTO 변환 (⭐ 한글만 필터링)
+    // ⭐ 한글만 반환 (GameGuide용)
     private ItemResponse toResponse(Item item) {
         return new ItemResponse(
                 item.getId(),
@@ -52,6 +52,23 @@ public class ItemServiceImpl implements ItemService {
                 item.isStackable(),
                 filterKoreanOnly(item.getNames()), // ⭐ 한글만 필터링
                 filterKoreanDescriptions(item.getDescriptions()), // ⭐ 한글만 필터링
+                item.getSkills().stream().map(ItemSkill::getSkillId).toList(),
+                item.getAttributes().stream()
+                        .map(a -> new ItemResponse.AttributeDto(a.getStat(), a.getOp(), a.getValue()))
+                        .toList(),
+                item.getImageUrl()
+        );
+    }
+
+    // ⭐ 전체 데이터 반환 (Admin용)
+    private ItemResponse toResponseFull(Item item) {
+        return new ItemResponse(
+                item.getId(),
+                item.getRarity(),
+                item.isTwoHander(),
+                item.isStackable(),
+                item.getNames().stream().map(ItemName::getValue).toList(), // 전체 이름
+                item.getDescriptions().stream().map(ItemDescription::getValue).toList(), // 전체 설명
                 item.getSkills().stream().map(ItemSkill::getSkillId).toList(),
                 item.getAttributes().stream()
                         .map(a -> new ItemResponse.AttributeDto(a.getStat(), a.getOp(), a.getValue()))
@@ -132,7 +149,7 @@ public class ItemServiceImpl implements ItemService {
             }
 
             Item saved = itemRepository.save(toEntity(request));
-            return toResponse(saved);
+            return toResponseFull(saved); // ⭐ Admin용이므로 Full 반환
         } catch (DataIntegrityViolationException e) {
             throw new IllegalArgumentException("이미 존재하는 아이템 ID입니다: " + request.getId());
         }
@@ -141,6 +158,12 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemResponse getItem(String id) {
         return itemRepository.findById(id).map(this::toResponse).orElse(null);
+    }
+
+    // ⭐ Admin용 - 전체 데이터 반환
+    @Override
+    public ItemResponse getItemFull(String id) {
+        return itemRepository.findById(id).map(this::toResponseFull).orElse(null);
     }
 
     @Override
@@ -211,7 +234,7 @@ public class ItemServiceImpl implements ItemService {
                 item.getAttributes().add(a);
             }
 
-            return toResponse(itemRepository.save(item));
+            return toResponseFull(itemRepository.save(item)); // ⭐ Admin용이므로 Full 반환
         }).orElse(null);
     }
 

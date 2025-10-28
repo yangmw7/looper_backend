@@ -9,6 +9,7 @@ import java.util.List;
 public interface ItemService {
     ItemResponse createItem(ItemRequest request, MultipartFile imageFile);
     ItemResponse getItem(String id);
+    ItemResponse getItemFull(String id); // ⭐ Admin용 추가
     List<ItemResponse> getAllItems();
     ItemResponse updateItem(String id, ItemRequest request, MultipartFile imageFile);
     void deleteItem(String id);

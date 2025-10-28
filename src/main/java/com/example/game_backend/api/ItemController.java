@@ -41,6 +41,17 @@ public class ItemController {
         return ResponseEntity.ok(item);
     }
 
+    // ========== Admin용 상세 조회 (전체 데이터) ==========
+    @GetMapping("/{id}/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ItemResponse> getItemForAdmin(@PathVariable String id) {
+        ItemResponse item = itemService.getItemFull(id);
+        if (item == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(item);
+    }
+
     // ========== 관리자만 접근 가능 (관리 기능) ==========
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
@@ -48,9 +59,7 @@ public class ItemController {
             @RequestPart("item") String itemJson,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         try {
-            // JSON 문자열을 ItemRequest 객체로 변환
             ItemRequest request = objectMapper.readValue(itemJson, ItemRequest.class);
-
             log.info("아이템 생성 요청: ID={}, 이미지={}", request.getId(),
                     imageFile != null ? imageFile.getOriginalFilename() : "없음");
 
@@ -75,9 +84,7 @@ public class ItemController {
             @RequestPart("item") String itemJson,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         try {
-            // JSON 문자열을 ItemRequest 객체로 변환
             ItemRequest request = objectMapper.readValue(itemJson, ItemRequest.class);
-
             log.info("아이템 수정 요청: ID={}, 이미지={}", id,
                     imageFile != null ? imageFile.getOriginalFilename() : "없음");
 

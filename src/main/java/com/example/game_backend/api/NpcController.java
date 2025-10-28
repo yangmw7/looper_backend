@@ -26,7 +26,7 @@ public class NpcController {
     private final NpcService npcService;
     private final ObjectMapper objectMapper;
 
-    // ========== 모든 사용자 접근 가능 ==========
+    // ========== 모든 사용자 접근 가능 (GameGuide용) ==========
     @GetMapping
     public List<NpcResponse> getAllNpcs() {
         return npcService.getAllNpcs();
@@ -41,6 +41,17 @@ public class NpcController {
         return ResponseEntity.ok(npc);
     }
 
+    // ========== Admin용 상세 조회 (전체 데이터) ==========
+    @GetMapping("/{id}/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<NpcResponse> getNpcForAdmin(@PathVariable String id) {
+        NpcResponse npc = npcService.getNpcFull(id);
+        if (npc == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(npc);
+    }
+
     // ========== 관리자만 접근 가능 ==========
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
@@ -48,9 +59,7 @@ public class NpcController {
             @RequestPart("npc") String npcJson,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         try {
-            // JSON 문자열을 NpcRequest 객체로 변환
             NpcRequest request = objectMapper.readValue(npcJson, NpcRequest.class);
-
             log.info("NPC 생성 요청: ID={}, 이미지={}", request.getId(),
                     imageFile != null ? imageFile.getOriginalFilename() : "없음");
 
@@ -79,9 +88,7 @@ public class NpcController {
             @RequestPart("npc") String npcJson,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         try {
-            // JSON 문자열을 NpcRequest 객체로 변환
             NpcRequest request = objectMapper.readValue(npcJson, NpcRequest.class);
-
             log.info("NPC 수정 요청: ID={}, 이미지={}", id,
                     imageFile != null ? imageFile.getOriginalFilename() : "없음");
 

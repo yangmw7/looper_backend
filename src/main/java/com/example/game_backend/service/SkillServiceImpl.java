@@ -53,6 +53,14 @@ public class SkillServiceImpl implements SkillService {
                 .orElse(null);
     }
 
+    // ⭐ Admin용 - 전체 데이터 반환
+    @Override
+    public SkillResponse getSkillFull(String id) {
+        return skillRepository.findById(id)
+                .map(this::toResponseFull)
+                .orElse(null);
+    }
+
     @Override
     @Transactional
     public SkillResponse createSkill(SkillRequest request, MultipartFile imageFile) {
@@ -78,7 +86,7 @@ public class SkillServiceImpl implements SkillService {
         skill.setImageUrl(request.getImageUrl());
 
         skillRepository.save(skill);
-        return toResponse(skill);
+        return toResponseFull(skill); // ⭐ Admin용이므로 Full 반환
     }
 
     @Override
@@ -109,7 +117,7 @@ public class SkillServiceImpl implements SkillService {
         }
 
         skillRepository.save(skill);
-        return toResponse(skill);
+        return toResponseFull(skill); // ⭐ Admin용이므로 Full 반환
     }
 
     @Override
@@ -125,12 +133,22 @@ public class SkillServiceImpl implements SkillService {
         });
     }
 
-    // ⭐ List<String>에서 한글만 추출해서 List<String>으로 반환
+    // ⭐ 한글만 반환 (GameGuide용)
     private SkillResponse toResponse(Skill skill) {
         return new SkillResponse(
                 skill.getId(),
                 extractKoreanAsList(skill.getName()),
                 extractKoreanAsList(skill.getDescription()),
+                skill.getImageUrl()
+        );
+    }
+
+    // ⭐ 전체 데이터 반환 (Admin용)
+    private SkillResponse toResponseFull(Skill skill) {
+        return new SkillResponse(
+                skill.getId(),
+                skill.getName(), // 영문/한글 모두 포함
+                skill.getDescription(), // 영문/한글 모두 포함
                 skill.getImageUrl()
         );
     }
