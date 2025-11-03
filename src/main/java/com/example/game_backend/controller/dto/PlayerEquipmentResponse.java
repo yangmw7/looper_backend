@@ -23,7 +23,6 @@ public class PlayerEquipmentResponse {
     @AllArgsConstructor
     @Builder
     public static class StatsDto {
-        // 최종 스탯 (기본 + 장비)
         private Float hp;
         private Float atk;
         private Float def;
@@ -34,7 +33,6 @@ public class PlayerEquipmentResponse {
         private Float ats;
         private Integer jcnt;
 
-        // 장비 보너스
         private Float equipmentHp;
         private Float equipmentAtk;
         private Float equipmentDef;
@@ -47,25 +45,32 @@ public class PlayerEquipmentResponse {
 
         public static StatsDto from(PlayerStats stats, EquipmentBonus bonus) {
             return StatsDto.builder()
-                    .hp(stats.getHp() + bonus.getHp())
-                    .atk(stats.getAtk() + bonus.getAtk())
-                    .def(stats.getDef() + bonus.getDef())
-                    .cri(stats.getCri() + bonus.getCri())
-                    .crid(stats.getCrid() + bonus.getCrid())
-                    .spd(stats.getSpd() + bonus.getSpd())
-                    .jmp(stats.getJmp() + bonus.getJmp())
-                    .ats(stats.getAts() + bonus.getAts())
-                    .jcnt(stats.getJcnt() + bonus.getJcnt())
-                    .equipmentHp(bonus.getHp())
-                    .equipmentAtk(bonus.getAtk())
-                    .equipmentDef(bonus.getDef())
-                    .equipmentCri(bonus.getCri())
-                    .equipmentCrid(bonus.getCrid())
-                    .equipmentSpd(bonus.getSpd())
-                    .equipmentJmp(bonus.getJmp())
-                    .equipmentAts(bonus.getAts())
-                    .equipmentJcnt(bonus.getJcnt())
+                    // DB 실제 저장값 그대로
+                    .hp(nz(stats.getHp()))
+                    .atk(nz(stats.getAtk()))
+                    .def(nz(stats.getDef()))
+                    .cri(nz(stats.getCri()))
+                    .crid(nz(stats.getCrid()))
+                    .spd(nz(stats.getSpd()))
+                    .jmp(nz(stats.getJmp()))
+                    .ats(nz(stats.getAts()))
+                    .jcnt(stats.getJcnt() == null ? 0 : stats.getJcnt())
+
+                    // 장비 보너스는 프론트 표시용으로 별도
+                    .equipmentHp(nz(bonus.getHp()))
+                    .equipmentAtk(nz(bonus.getAtk()))
+                    .equipmentDef(nz(bonus.getDef()))
+                    .equipmentCri(nz(bonus.getCri()))
+                    .equipmentCrid(nz(bonus.getCrid()))
+                    .equipmentSpd(nz(bonus.getSpd()))
+                    .equipmentJmp(nz(bonus.getJmp()))
+                    .equipmentAts(nz(bonus.getAts()))
+                    .equipmentJcnt(bonus.getJcnt() == null ? 0 : bonus.getJcnt())
                     .build();
+        }
+
+        private static float nz(Float v) {
+            return v == null ? 0f : v;
         }
     }
 
@@ -93,10 +98,9 @@ public class PlayerEquipmentResponse {
         private String type;
         private String name;
         private String desc;
-        private String icon;        // 이모지 (호환성 유지)
-        private String imageUrl;    // 실제 이미지 URL 추가
+        private String icon;
+        private String imageUrl;
 
-        // 모든 스탯
         private Float hp;
         private Float atk;
         private Float def;
