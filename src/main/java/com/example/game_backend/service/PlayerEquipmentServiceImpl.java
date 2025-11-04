@@ -74,14 +74,12 @@ public class PlayerEquipmentServiceImpl implements PlayerEquipmentService {
         Integer slotIndex = getSlotIndex(request.getSlot());
         if (slotIndex == null) throw new IllegalArgumentException("유효하지 않은 슬롯입니다: " + request.getSlot());
 
-        // 기존 장비 해제
         String oldItemId = equippedArray.get(slotIndex);
         if (oldItemId != null && !oldItemId.trim().isEmpty() && !oldItemId.equals("00000")) {
             removeItemStatsFromPlayer(stats, oldItemId);
             addItemToInventory(inventorySlots, oldItemId);
         }
 
-        // 새 장비 장착
         addItemStatsToPlayer(stats, request.getItemId());
         equippedArray.set(slotIndex, request.getItemId());
         removeItemFromInventory(inventorySlots, request.getItemId());
@@ -218,7 +216,8 @@ public class PlayerEquipmentServiceImpl implements PlayerEquipmentService {
             List<String> arr=objectMapper.readValue(inventoryJson,new TypeReference<List<String>>(){});
             List<InventorySlot> slots=new ArrayList<>();
             for(String s:arr){
-                try{ InventorySlot slot=objectMapper.readValue(s,InventorySlot.class);
+                try{
+                    InventorySlot slot=objectMapper.readValue(s,InventorySlot.class);
                     if(slot.getEa()!=null&&slot.getEa()>0&&slot.getItemid()!=null&&!slot.getItemid().isBlank())
                         slots.add(slot);
                 }catch(Exception ignored){}
@@ -234,14 +233,17 @@ public class PlayerEquipmentServiceImpl implements PlayerEquipmentService {
 
     private PlayerEquipmentResponse.ItemInfo convertToItemInfo(Item item){
         String name=item.getNames().stream()
-                .filter(n->"ko".equals(n.getLang()))
-                .findFirst().map(ItemName::getValue).orElse(item.getId());
+                .filter(n->n.getLang()!=null && n.getLang().toLowerCase().contains("ko"))
+                .findFirst().map(ItemName::getValue)
+                .orElse(item.getId());
         String desc=item.getDescriptions().stream()
-                .filter(d->"ko".equals(d.getLang()))
-                .findFirst().map(ItemDescription::getValue).orElse("");
+                .filter(d->d.getLang()!=null && d.getLang().toLowerCase().contains("ko"))
+                .findFirst().map(ItemDescription::getValue)
+                .orElse("");
         String type=getItemType(item.getId());
         Map<String,Float> st=new HashMap<>();
-        for(ItemAttribute a:item.getAttributes()) if("ADD".equals(a.getOp())) st.put(a.getStat().toLowerCase(),a.getValue());
+        for(ItemAttribute a:item.getAttributes())
+            if("ADD".equals(a.getOp())) st.put(a.getStat().toLowerCase(),a.getValue());
         return PlayerEquipmentResponse.ItemInfo.builder()
                 .id(item.getId()).type(type).name(name).desc(desc)
                 .imageUrl(item.getImageUrl())

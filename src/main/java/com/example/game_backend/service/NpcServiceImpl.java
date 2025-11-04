@@ -22,23 +22,6 @@ public class NpcServiceImpl implements NpcService {
     private final NpcRepository npcRepository;
     private final CloudinaryService cloudinaryService;
 
-    // List<String>에서 한글만 추출해서 List<String>으로 반환
-    private List<String> extractKoreanAsList(List<String> list) {
-        if (list == null || list.isEmpty()) {
-            return List.of();
-        }
-
-        // 배열의 두 번째 요소(index 1)가 한글
-        if (list.size() > 1) {
-            return List.of(list.get(1)); // 한글만 List로 반환
-        }
-
-        // 한글이 포함된 문자열만 필터링
-        return list.stream()
-                .filter(s -> s != null && s.matches(".*[가-힣].*"))
-                .toList();
-    }
-
     @Override
     public List<NpcResponse> getAllNpcs() {
         return npcRepository.findAll().stream()
@@ -53,7 +36,6 @@ public class NpcServiceImpl implements NpcService {
                 .orElse(null);
     }
 
-    // ⭐ Admin용 - 전체 데이터 반환
     @Override
     public NpcResponse getNpcFull(String id) {
         return npcRepository.findById(id)
@@ -64,7 +46,6 @@ public class NpcServiceImpl implements NpcService {
     @Override
     @Transactional
     public NpcResponse createNpc(NpcRequest request, MultipartFile imageFile) {
-        // ID 중복 검사
         if (request.getId() == null || request.getId().isBlank()) {
             throw new IllegalArgumentException("NPC ID는 반드시 입력해야 합니다.");
         }
@@ -72,7 +53,6 @@ public class NpcServiceImpl implements NpcService {
             throw new DuplicateKeyException("이미 존재하는 NPC ID입니다: " + request.getId());
         }
 
-        // Cloudinary에 이미지 업로드
         if (imageFile != null && !imageFile.isEmpty()) {
             String imageUrl = cloudinaryService.uploadImage(imageFile, "npc_" + request.getId());
             request.setImageUrl(imageUrl);
@@ -90,7 +70,7 @@ public class NpcServiceImpl implements NpcService {
         npc.setImageUrl(request.getImageUrl());
 
         npcRepository.save(npc);
-        return toResponseFull(npc); // ⭐ Admin용이므로 Full 반환
+        return toResponseFull(npc);
     }
 
     @Override
@@ -100,8 +80,6 @@ public class NpcServiceImpl implements NpcService {
         if (optionalNpc.isEmpty()) return null;
 
         Npc npc = optionalNpc.get();
-
-        // 기존 이미지 URL 저장 (삭제용)
         String oldImageUrl = npc.getImageUrl();
 
         npc.setName(request.getName());
@@ -111,28 +89,23 @@ public class NpcServiceImpl implements NpcService {
         npc.setSpd(request.getSpd());
         npc.setFeatures(request.getFeatures());
 
-        // 새 이미지 업로드
         if (imageFile != null && !imageFile.isEmpty()) {
-            // 기존 이미지 삭제
             if (oldImageUrl != null) {
                 cloudinaryService.deleteImage(oldImageUrl);
             }
-
-            // 새 이미지 업로드
             String newImageUrl = cloudinaryService.uploadImage(imageFile, "npc_" + id);
             npc.setImageUrl(newImageUrl);
             log.info("NPC {} 이미지 업데이트 완료: {}", id, newImageUrl);
         }
 
         npcRepository.save(npc);
-        return toResponseFull(npc); // ⭐ Admin용이므로 Full 반환
+        return toResponseFull(npc);
     }
 
     @Override
     @Transactional
     public void deleteNpc(String id) {
         npcRepository.findById(id).ifPresent(npc -> {
-            // Cloudinary 이미지 삭제
             if (npc.getImageUrl() != null) {
                 cloudinaryService.deleteImage(npc.getImageUrl());
                 log.info("NPC {} 이미지 삭제 완료", id);
@@ -141,30 +114,30 @@ public class NpcServiceImpl implements NpcService {
         });
     }
 
-    // ⭐ 한글만 반환 (GameGuide용)
+    // 일반 사용자용 (GameGuide용)
     private NpcResponse toResponse(Npc npc) {
         return new NpcResponse(
                 npc.getId(),
-                extractKoreanAsList(npc.getName()),
+                npc.getName(),
                 npc.getHp(),
                 npc.getAtk(),
                 npc.getDef(),
                 npc.getSpd(),
-                extractKoreanAsList(npc.getFeatures()),
+                npc.getFeatures(),
                 npc.getImageUrl()
         );
     }
 
-    // ⭐ 전체 데이터 반환 (Admin용)
+    // 관리자용 (전체 데이터)
     private NpcResponse toResponseFull(Npc npc) {
         return new NpcResponse(
                 npc.getId(),
-                npc.getName(), // 영문/한글 모두 포함
+                npc.getName(),
                 npc.getHp(),
                 npc.getAtk(),
                 npc.getDef(),
                 npc.getSpd(),
-                npc.getFeatures(), // 전체 features 포함
+                npc.getFeatures(),
                 npc.getImageUrl()
         );
     }

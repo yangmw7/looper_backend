@@ -145,6 +145,12 @@ public class MyPageServiceImpl implements MyPageService {
         if (requestDto.getInventory() != null) {
             stats.setInventory(requestDto.getInventory());
         }
+        if (requestDto.getAts() != null) {
+            stats.setAts(requestDto.getAts());
+        }
+        if (requestDto.getJcnt() != null) {
+            stats.setJcnt(requestDto.getJcnt());
+        }
 
         PlayerStats updated = playerStatsRepository.save(stats);
         return StatsResponseDto.from(updated);
